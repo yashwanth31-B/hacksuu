@@ -34,9 +34,9 @@ function AppContent() {
   // 1. Loading Initial Setup State
   if (checkingSetup) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500 mb-3" />
-        <span className="text-sm font-semibold tracking-wider uppercase">Loading CivicFix V2...</span>
+      <div className="min-h-screen bg-[#F9F6EE] flex flex-col items-center justify-center text-[#5C6E6A]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#E5A952] mb-3" />
+        <span className="text-xs font-semibold tracking-widest uppercase text-[#1A2825]">Loading CivicFix V2...</span>
       </div>
     );
   }
@@ -54,10 +54,10 @@ function AppContent() {
 
   // 3. Main Application Routing
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-500/30">
+    <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] flex flex-col md:flex-row font-sans selection:bg-[#E5A952]/30">
       <Navbar currentPath={currentPath} navigate={navigate} />
 
-      <main className="flex-1">
+      <main className="flex-1 min-w-0 bg-[#F9F6EE] text-[#1A2825] min-h-screen">
         {currentPath === '/' && <Home navigate={navigate} />}
         {currentPath === '/report' && <ReportIssue navigate={navigate} />}
         {currentPath === '/map' && <PublicMap navigate={navigate} />}

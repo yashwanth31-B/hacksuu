@@ -209,8 +209,8 @@ export const CivicMap: React.FC<CivicMapProps> = ({
       const el = document.createElement('div');
       el.className = 'civic-picker-marker';
       el.innerHTML = `
-        <div style="background-color: #ef4444; width: 36px; height: 36px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 4px 12px rgba(0,0,0,0.4); cursor: grab;">
-          <div style="width: 10px; height: 10px; background: white; border-radius: 50%; transform: rotate(45deg);"></div>
+        <div style="background-color: #B06D44; width: 36px; height: 36px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; border: 3px solid #FAF9F5; box-shadow: 0 4px 12px rgba(27,62,54,0.3); cursor: grab;">
+          <div style="width: 10px; height: 10px; background: #FAF9F5; border-radius: 50%; transform: rotate(45deg);"></div>
         </div>
       `;
 
@@ -252,19 +252,19 @@ export const CivicMap: React.FC<CivicMapProps> = ({
       el.className = 'live-user-gps-beacon cursor-pointer';
       el.innerHTML = `
         <div style="position: relative; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
-          <div style="position: absolute; width: 32px; height: 32px; border-radius: 50%; background: rgba(59, 130, 246, 0.35); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
-          <div style="position: absolute; width: 20px; height: 20px; border-radius: 50%; background: rgba(37, 99, 235, 0.5);"></div>
-          <div style="position: relative; width: 12px; height: 12px; border-radius: 50%; background: #2563eb; border: 2.5px solid #ffffff; box-shadow: 0 0 8px rgba(37, 99, 235, 0.8);"></div>
+          <div style="position: absolute; width: 32px; height: 32px; border-radius: 50%; background: rgba(27, 62, 54, 0.3); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>
+          <div style="position: absolute; width: 20px; height: 20px; border-radius: 50%; background: rgba(229, 169, 82, 0.4);"></div>
+          <div style="position: relative; width: 12px; height: 12px; border-radius: 50%; background: #1B3E36; border: 2.5px solid #FAF9F5; box-shadow: 0 0 8px rgba(27, 62, 54, 0.6);"></div>
         </div>
       `;
 
       const popup = new Popup({ offset: 16, closeButton: false }).setHTML(`
-        <div style="padding: 6px 10px; font-family: sans-serif; font-size: 11px; line-height: 1.3; color: #0f172a; text-align: left;">
-          <div style="font-weight: 700; color: #2563eb; display: flex; align-items: center; gap: 4px;">
-            <span>📍 Your Live Location</span>
+        <div style="padding: 6px 10px; font-family: Georgia, serif; font-size: 11px; line-height: 1.3; color: #1A2825; text-align: left; background: #FAF9F5;">
+          <div style="font-weight: 700; color: #1B3E36; display: flex; align-items: center; gap: 4px;">
+            <span>📍 Your Verified Coordinates</span>
           </div>
-          <div style="color: #64748b; margin-top: 2px;">Accuracy: ±${userLocation.accuracy ?? '—'}m</div>
-          <div style="color: #94a3b8; font-size: 10px;">${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}</div>
+          <div style="color: #5C6E6A; margin-top: 2px;">Accuracy: ±${userLocation.accuracy ?? '—'}m</div>
+          <div style="color: #8A9894; font-size: 10px; font-family: monospace;">${userLocation.lat.toFixed(5)}, ${userLocation.lng.toFixed(5)}</div>
         </div>
       `);
 
@@ -315,18 +315,18 @@ export const CivicMap: React.FC<CivicMapProps> = ({
 
       const isSelected = comp.id === selectedComplaintId;
 
-      // Color based on status
-      let bgColor = '#3b82f6'; // blue for VERIFIED
-      if (comp.status === 'RESOLVED') bgColor = '#10b981'; // green
-      else if (comp.status === 'IN_PROGRESS' || comp.status === 'ACCEPTED' || comp.status === 'ARRIVED' || comp.status === 'ASSIGNED') bgColor = '#f59e0b'; // amber
-      else if (comp.status === 'REPORTED') bgColor = '#ef4444'; // red
+      // Color based on status in archival palette
+      let bgColor = '#1B3E36'; // deep spruce for VERIFIED
+      if (comp.status === 'RESOLVED') bgColor = '#2E6F5E'; // natural olive
+      else if (comp.status === 'IN_PROGRESS' || comp.status === 'ACCEPTED' || comp.status === 'ARRIVED' || comp.status === 'ASSIGNED') bgColor = '#E5A952'; // golden ochre
+      else if (comp.status === 'REPORTED') bgColor = '#B06D44'; // rust terracotta
 
       const categoryEmoji = getCategoryIcon(comp.category);
 
       const el = document.createElement('div');
       el.className = 'civic-complaint-marker';
       el.innerHTML = `
-        <div style="background-color: ${bgColor}; width: ${isSelected ? '36px' : '30px'}; height: ${isSelected ? '36px' : '30px'}; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2.5px solid white; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
+        <div style="background-color: ${bgColor}; width: ${isSelected ? '36px' : '30px'}; height: ${isSelected ? '36px' : '30px'}; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); border: 2.5px solid #FAF9F5; box-shadow: 0 4px 10px rgba(27,62,54,0.3); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease;">
           <span style="transform: rotate(45deg); font-size: ${isSelected ? '14px' : '12px'}; line-height: 1;">${categoryEmoji}</span>
         </div>
       `;
@@ -344,13 +344,13 @@ export const CivicMap: React.FC<CivicMapProps> = ({
       });
 
       const popup = new Popup({ offset: 25, closeButton: false }).setHTML(`
-        <div style="padding: 8px 10px; font-family: system-ui; max-width: 220px;">
+        <div style="padding: 8px 10px; font-family: Georgia, serif; max-width: 220px; background: #FAF9F5; border-radius: 8px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
-            <span style="font-size: 11px; font-weight: 700; color: #64748b;">${comp.complaintNumber}</span>
-            <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: ${bgColor}20; color: ${bgColor}; text-transform: uppercase;">${comp.status}</span>
+            <span style="font-size: 11px; font-weight: 700; font-family: monospace; color: #1B3E36;">${comp.complaintNumber}</span>
+            <span style="font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px; background: ${bgColor}25; color: ${bgColor}; text-transform: uppercase;">${comp.status}</span>
           </div>
-          <div style="font-size: 13px; font-weight: 600; color: #0f172a; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${comp.title}</div>
-          <div style="font-size: 11px; color: #475569;">${comp.category} • ${comp.address || 'Location'}</div>
+          <div style="font-size: 13px; font-weight: 700; color: #1A2825; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${comp.title}</div>
+          <div style="font-size: 11px; color: #5C6E6A; font-family: sans-serif;">${comp.category} • ${comp.address || 'Location'}</div>
         </div>
       `);
 
@@ -364,7 +364,7 @@ export const CivicMap: React.FC<CivicMapProps> = ({
   }, [complaints, selectedComplaintId, pickerMode]);
 
   return (
-    <div className={`relative w-full rounded-2xl overflow-hidden border border-slate-800 ${heightClass}`}>
+    <div className={`relative w-full rounded-2xl overflow-hidden border border-[#D4CEBF] ${heightClass}`}>
       <div ref={mapContainer} className="w-full h-full" />
     </div>
   );

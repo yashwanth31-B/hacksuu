@@ -9,23 +9,16 @@ import {
   Clock,
   MapPin,
   Camera,
-  AlertCircle,
-  FileCheck,
   Award,
-  ArrowRight,
-  ShieldCheck,
-  Loader2,
-  Radio,
-  LocateFixed,
 } from 'lucide-react';
 
 interface WorkerDashboardProps {
   navigate: (path: string) => void;
 }
 
-export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) => {
+export const WorkerDashboard: React.FC<WorkerDashboardProps> = () => {
   const { user, profile, getAuthToken } = useAuth();
-  const { location: gpsLocation, isTracking, calculateDistance, formatDistance, startTracking } = useGPS();
+  const { location: gpsLocation, calculateDistance, formatDistance } = useGPS();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTask, setActiveTask] = useState<any | null>(null);
@@ -150,27 +143,27 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E5E1D5]">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                Field Response Operations
+              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#2E6F5E]/10 text-[#1B4D3E] border border-[#A8CEBE] font-mono">
+                FIELD RESPONSE OPERATIONS
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mt-1">
               Field Worker & Crew Dashboard
             </h1>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-2xl flex items-center gap-2">
-              <Award className="w-5 h-5 text-amber-400" />
+            <div className="bg-[#FAF9F5] border border-[#E5E1D5] px-4 py-2 rounded-2xl flex items-center gap-2 shadow-xs">
+              <Award className="w-5 h-5 text-[#E5A952]" />
               <div>
-                <div className="text-[10px] text-slate-400 font-bold uppercase">Performance Credit</div>
-                <div className="text-sm font-mono font-bold text-white">Active Dispatch</div>
+                <div className="text-[10px] text-[#5C6E6A] font-bold uppercase font-mono">Performance Credit</div>
+                <div className="text-sm font-serif font-bold text-[#1A2825]">Active Dispatch</div>
               </div>
             </div>
           </div>
@@ -179,15 +172,15 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
         {/* Layout: Tasks list + Active Task Focus */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left: Assigned Tasks */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5 space-y-3">
-            <h2 className="text-sm font-bold text-white uppercase tracking-wider mb-2">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-5 space-y-3 shadow-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-2">
               Assigned Work Queue ({tasks.length})
-            </h2>
+            </div>
 
             {loading ? (
-              <div className="py-8 text-center text-slate-500 text-xs">Loading queue...</div>
+              <div className="py-8 text-center text-[#5C6E6A] text-xs font-mono">Loading queue...</div>
             ) : tasks.length === 0 ? (
-              <div className="py-8 text-center text-slate-500 text-xs">
+              <div className="py-8 text-center text-[#5C6E6A] text-xs font-mono">
                 No active tasks currently assigned to this response unit.
               </div>
             ) : (
@@ -199,20 +192,20 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                     onClick={() => setActiveTask(task)}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-blue-600/15 border-blue-500 text-white'
-                        : 'bg-slate-950 border-slate-800 hover:border-slate-700 text-slate-300'
+                        ? 'bg-[#1B3E36]/10 border-[#1B3E36] text-[#1A2825] font-bold shadow-xs'
+                        : 'bg-[#FFFFFF] border-[#E5E1D5] hover:border-[#D4CEBF] text-[#1A2825]'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-mono text-xs font-bold text-blue-400">
+                      <span className="font-mono text-xs font-bold text-[#1B3E36]">
                         {task.complaintNumber}
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 uppercase">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#D4CEBF] uppercase font-mono">
                         {task.status}
                       </span>
                     </div>
-                    <div className="text-sm font-semibold text-white truncate">{task.title}</div>
-                    <div className="text-xs text-slate-400 truncate mt-0.5">{task.address}</div>
+                    <div className="text-sm font-bold text-[#1A2825] truncate">{task.title}</div>
+                    <div className="text-xs text-[#5C6E6A] truncate mt-0.5">{task.address}</div>
                   </div>
                 );
               })
@@ -222,39 +215,39 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
           {/* Right: Active Task Details & Action Workflow */}
           <div className="lg:col-span-2 space-y-6">
             {activeTask ? (
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-slate-800">
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E5E1D5]">
                   <div>
-                    <span className="font-mono text-xs font-bold text-blue-400">
+                    <span className="font-mono text-xs font-bold text-[#1B3E36]">
                       {activeTask.complaintNumber}
                     </span>
-                    <h2 className="text-xl font-bold text-white mt-0.5">{activeTask.title}</h2>
+                    <h2 className="text-xl font-serif font-bold text-[#1A2825] mt-0.5">{activeTask.title}</h2>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 uppercase">
+                    <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A] uppercase font-mono">
                       Status: {activeTask.status}
                     </span>
                   </div>
                 </div>
 
                 {/* Location & Navigation */}
-                <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
                   <div className="flex items-center gap-3">
-                    <MapPin className="w-5 h-5 text-red-400 shrink-0" />
+                    <MapPin className="w-5 h-5 text-[#B06D44] shrink-0" />
                     <div>
-                      <div className="text-xs font-semibold text-white flex items-center gap-2">
+                      <div className="text-xs font-bold text-[#1A2825] flex items-center gap-2">
                         <span>{activeTask.address}</span>
                         {calculateDistance(activeTask.latitude, activeTask.longitude) !== null && (
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/10 text-blue-300 border border-blue-500/20">
+                          <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE] font-bold">
                             📍 {formatDistance(calculateDistance(activeTask.latitude, activeTask.longitude))}
                           </span>
                         )}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono mt-0.5">
+                      <div className="text-[10px] text-[#5C6E6A] font-mono mt-0.5">
                         GPS: {activeTask.latitude}, {activeTask.longitude}
                         {gpsLocation && (
-                          <span className="text-slate-400 ml-2">
+                          <span className="text-[#1B3E36] font-bold ml-2">
                             (Your GPS: {gpsLocation.lat.toFixed(4)}, {gpsLocation.lng.toFixed(4)})
                           </span>
                         )}
@@ -270,19 +263,19 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                     }
                     target="_blank"
                     rel="noreferrer"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl flex items-center justify-center gap-2 transition-colors self-start sm:self-auto cursor-pointer shadow-md shadow-blue-600/20"
+                    className="px-4 py-2 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider rounded-xl flex items-center justify-center gap-2 transition-colors self-start sm:self-auto cursor-pointer shadow-xs"
                   >
-                    <Navigation className="w-4 h-4" />
-                    <span>Navigate from Live GPS</span>
+                    <Navigation className="w-4 h-4 text-[#E5A952]" />
+                    <span>Navigate via GPS</span>
                   </a>
                 </div>
 
                 {/* Description & Citizen Evidence */}
                 <div>
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5C6E6A] font-mono mb-2">
                     Reported Issue Description
                   </h3>
-                  <p className="text-sm text-slate-300 leading-relaxed bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
+                  <p className="text-sm text-[#1A2825] leading-relaxed bg-[#FFFFFF] p-4 rounded-2xl border border-[#E5E1D5] shadow-xs">
                     {activeTask.description}
                   </p>
                 </div>
@@ -290,12 +283,12 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                 {/* Citizen Evidence Photo */}
                 {activeTask.media && activeTask.media.length > 0 && (
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-2">
                       Citizen Evidence Photos
                     </h3>
                     <div className="flex gap-3 overflow-x-auto pb-2">
                       {activeTask.media.map((m: any, i: number) => (
-                        <div key={i} className="w-36 h-28 rounded-xl overflow-hidden border border-slate-800 shrink-0">
+                        <div key={i} className="w-36 h-28 rounded-xl overflow-hidden border border-[#D4CEBF] shrink-0 shadow-xs">
                           <img src={m.fileUrl} alt="Evidence" className="w-full h-full object-cover" />
                         </div>
                       ))}
@@ -304,8 +297,8 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                 )}
 
                 {/* Interactive Workflow Buttons */}
-                <div className="pt-4 border-t border-slate-800">
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">
+                <div className="pt-4 border-t border-[#E5E1D5]">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-[#5C6E6A] font-mono mb-3">
                     Response Unit Field Workflow
                   </h3>
 
@@ -314,9 +307,9 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                       <button
                         onClick={() => handleTaskAction(activeTask.id, 'accept')}
                         disabled={actionLoading}
-                        className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-blue-600/20 cursor-pointer"
+                        className="px-6 py-3 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
                       >
-                        <CheckCircle2 className="w-4 h-4" />
+                        <CheckCircle2 className="w-4 h-4 text-[#E5A952]" />
                         <span>Accept Assignment (+5 Credits)</span>
                       </button>
                     )}
@@ -325,7 +318,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                       <button
                         onClick={() => handleTaskAction(activeTask.id, 'arrived')}
                         disabled={actionLoading}
-                        className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-amber-500/20 cursor-pointer"
+                        className="px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
                       >
                         <MapPin className="w-4 h-4" />
                         <span>Mark On-Site Arrival (+10 Credits)</span>
@@ -336,7 +329,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                       <button
                         onClick={() => handleTaskAction(activeTask.id, 'start')}
                         disabled={actionLoading}
-                        className="px-6 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/20 cursor-pointer"
+                        className="px-6 py-3 bg-[#527E74] hover:bg-[#43675f] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
                       >
                         <Wrench className="w-4 h-4" />
                         <span>Commence Active Work (+5 Credits)</span>
@@ -346,21 +339,21 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                     {activeTask.status === 'IN_PROGRESS' && (
                       <button
                         onClick={() => setShowCompletionModal(true)}
-                        className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/20 cursor-pointer"
+                        className="px-6 py-3 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
                       >
-                        <Camera className="w-4 h-4" />
+                        <Camera className="w-4 h-4 text-[#E5A952]" />
                         <span>Submit Completion Proof (+25 Credits)</span>
                       </button>
                     )}
 
                     {activeTask.status === 'COMPLETED' && (
-                      <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl w-full">
-                        <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold mb-2">
+                      <div className="bg-[#E6F2ED] border border-[#A8CEBE] p-4 rounded-2xl w-full">
+                        <div className="flex items-center gap-2 text-[#1B4D3E] text-xs font-bold mb-2 font-mono">
                           <Clock className="w-4 h-4" />
-                          <span>Work Submitted - Awaiting Supervisory Verification</span>
+                          <span>WORK SUBMITTED - AWAITING VERIFICATION</span>
                         </div>
-                        <p className="text-xs text-slate-300">
-                          Field evidence uploaded. Final resolution credits (+50 points) will be credited once inspected by a supervisor or administrator.
+                        <p className="text-xs text-[#5C6E6A]">
+                          Field evidence uploaded. Final resolution credits (+50 points) will be awarded once inspected by a supervisor or administrator.
                         </p>
 
                         {(profile?.role === 'admin' || profile?.role === 'supervisor') && (
@@ -368,14 +361,14 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                             <button
                               onClick={() => handleVerifyResolution(activeTask.id, true)}
                               disabled={actionLoading}
-                              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded-xl"
+                              className="px-4 py-2 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
                             >
                               Approve Resolution (Close Issue)
                             </button>
                             <button
                               onClick={() => handleVerifyResolution(activeTask.id, false)}
                               disabled={actionLoading}
-                              className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold rounded-xl"
+                              className="px-4 py-2 bg-[#FFF1E6] hover:bg-[#ffe6d6] text-[#8A3B2A] border border-[#F4C49E] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
                             >
                               Reject & Reopen
                             </button>
@@ -387,7 +380,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                 </div>
               </div>
             ) : (
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center text-slate-500 text-sm">
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-12 text-center text-[#5C6E6A] text-sm font-mono shadow-xs">
                 Select a task from the queue to view details and action workflow.
               </div>
             )}
@@ -396,16 +389,16 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
 
         {/* Completion Modal */}
         {showCompletionModal && (
-          <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full">
-              <h3 className="text-xl font-bold text-white mb-2">Submit Work Completion Proof</h3>
-              <p className="text-xs text-slate-400 mb-6">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-[#FAF9F5] border border-[#D4CEBF] rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl">
+              <h3 className="text-xl font-serif font-bold text-[#1A2825] mb-2">Submit Work Completion Proof</h3>
+              <p className="text-xs text-[#5C6E6A] mb-6">
                 Upload resolution photos and describe the completed repair work for supervisor verification.
               </p>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                     Completion Notes *
                   </label>
                   <textarea
@@ -413,22 +406,22 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                     placeholder="e.g. Filled pothole with cold asphalt mix, compacted surface, cleared road debris..."
                     value={completionNotes}
                     onChange={(e) => setCompletionNotes(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 focus:border-emerald-500 rounded-xl p-3 text-sm text-white placeholder-slate-500 outline-none resize-none"
+                    className="w-full bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] rounded-xl p-3 text-sm text-[#1A2825] placeholder-[#8A9894] outline-none resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                  <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                     Resolution Photo Evidence
                   </label>
-                  <label className="border border-dashed border-slate-800 bg-slate-950 rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-emerald-500/50 transition-colors">
-                    <Camera className="w-6 h-6 text-emerald-400 mb-2" />
-                    <span className="text-xs text-slate-300">Click to upload completion photo</span>
+                  <label className="border-2 border-dashed border-[#D4CEBF] bg-[#FFFFFF] rounded-xl p-6 flex flex-col items-center justify-center cursor-pointer hover:border-[#1B3E36] transition-colors">
+                    <Camera className="w-6 h-6 text-[#1B3E36] mb-2" />
+                    <span className="text-xs font-bold text-[#1A2825]">Click to upload completion photo</span>
                     <input type="file" accept="image/*" onChange={handlePhotoUpload} className="hidden" />
                   </label>
 
                   {completionPhoto && (
-                    <div className="mt-3 w-28 h-20 rounded-xl overflow-hidden border border-slate-800">
+                    <div className="mt-3 w-28 h-20 rounded-xl overflow-hidden border border-[#D4CEBF] shadow-xs">
                       <img src={completionPhoto} alt="Resolution" className="w-full h-full object-cover" />
                     </div>
                   )}
@@ -439,7 +432,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                 <button
                   type="button"
                   onClick={() => setShowCompletionModal(false)}
-                  className="px-4 py-2 text-slate-400 hover:text-white text-xs font-semibold"
+                  className="px-4 py-2 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider"
                 >
                   Cancel
                 </button>
@@ -447,7 +440,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                   type="button"
                   onClick={handleCompleteTask}
                   disabled={actionLoading || !completionNotes.trim()}
-                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl disabled:opacity-50 cursor-pointer"
+                  className="px-6 py-2.5 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {actionLoading ? 'Submitting...' : 'Submit Resolution Proof'}
                 </button>

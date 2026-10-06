@@ -4,8 +4,6 @@ import { useGPS } from '../context/GPSContext.tsx';
 import { CivicMap } from '../components/CivicMap.tsx';
 import { getApiUrl } from '../lib/api.ts';
 import {
-  AlertTriangle,
-  Upload,
   Camera,
   MapPin,
   Sparkles,
@@ -14,12 +12,8 @@ import {
   ArrowRight,
   ArrowLeft,
   Loader2,
-  Eye,
-  ShieldAlert,
   Navigation,
   Radio,
-  LocateFixed,
-  Compass,
   Crosshair,
 } from 'lucide-react';
 
@@ -42,7 +36,7 @@ const CATEGORIES = [
 ];
 
 export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
-  const { user, getAuthToken } = useAuth();
+  const { getAuthToken } = useAuth();
 
   // Wizard Step (1 to 6)
   const [step, setStep] = useState(1);
@@ -63,7 +57,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
   const [aiResult, setAiResult] = useState<any>(null);
 
   // Duplicate states
-  const [checkingDuplicates, setCheckingDuplicates] = useState(false);
+  const [, setCheckingDuplicates] = useState(false);
   const [duplicates, setDuplicates] = useState<any[]>([]);
   const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
 
@@ -71,10 +65,8 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
   const {
     isTracking,
     location: gpsLocation,
-    status: gpsStatus,
     errorMessage: gpsContextError,
     startTracking,
-    stopTracking,
     refreshLocation,
   } = useGPS();
 
@@ -130,7 +122,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
           setGpsError(`Could not locate "${addressSearchInput}". Try another address or click the map.`);
         }
       }
-    } catch (err) {
+    } catch {
       setGpsError('Address lookup service unavailable. Please place marker on map.');
     } finally {
       setSearchingAddress(false);
@@ -151,7 +143,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
           setAddress(parts.slice(0, 3).join(', ').trim());
         }
       }
-    } catch (e) {
+    } catch {
       setAddress(`Approx. Coordinates: ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
     }
   };
@@ -246,7 +238,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             const data = await res.json();
             setDuplicates(data.duplicates || []);
           }
-        } catch (e) {
+        } catch {
           // ignore
         } finally {
           setCheckingDuplicates(false);
@@ -254,7 +246,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
       };
       runDupCheck();
     }
-  }, [step]);
+  }, [step, coords.lat, coords.lng, category, title]);
 
   // Submit Complaint
   const handleSubmit = async () => {
@@ -300,24 +292,24 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Step Progress Bar */}
         {step < 6 && (
           <div className="mb-8">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-400 mb-2">
-              <span>STEP {step} OF 5</span>
+            <div className="flex items-center justify-between text-xs font-bold text-[#5C6E6A] uppercase tracking-wider mb-2 font-mono">
+              <span className="text-[#1B3E36]">STEP {step} OF 5</span>
               <span>
                 {step === 1 && 'Issue Category'}
                 {step === 2 && 'Title & Details'}
                 {step === 3 && 'Photo & AI Assist'}
                 {step === 4 && 'Location & GPS'}
-                {step === 5 && 'Verification & Duplicate Check'}
+                {step === 5 && 'Verification & Review'}
               </span>
             </div>
-            <div className="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+            <div className="w-full bg-[#E5E1D5] h-2 rounded-full overflow-hidden border border-[#D4CEBF]">
               <div
-                className="bg-blue-600 h-full transition-all duration-300 rounded-full"
+                className="bg-[#1B3E36] h-full transition-all duration-300 rounded-full"
                 style={{ width: `${(step / 5) * 100}%` }}
               />
             </div>
@@ -326,11 +318,14 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 1: CATEGORY SELECTION */}
         {step === 1 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-1">Select Issue Category</h2>
-              <p className="text-slate-400 text-sm">
-                Choose the category that best describes the civic problem you observed.
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                CIVIC CLASSIFICATION
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mb-1">Select Issue Category</h2>
+              <p className="text-[#5C6E6A] text-sm">
+                Choose the category that best describes the civic problem observed in your ward.
               </p>
             </div>
 
@@ -343,15 +338,15 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                     onClick={() => setCategory(cat.id)}
                     className={`p-4 rounded-2xl border cursor-pointer transition-all ${
                       isSelected
-                        ? 'bg-blue-600/10 border-blue-500 shadow-md shadow-blue-500/10'
-                        : 'bg-slate-950/60 border-slate-800 hover:border-slate-700'
+                        ? 'bg-[#1B3E36]/10 border-[#1B3E36] ring-1 ring-[#1B3E36] shadow-sm'
+                        : 'bg-[#FFFFFF] border-[#E5E1D5] hover:border-[#D4CEBF]'
                     }`}
                   >
                     <div className="flex items-start gap-3">
                       <span className="text-2xl">{cat.icon}</span>
                       <div>
-                        <div className="font-semibold text-sm text-white">{cat.label}</div>
-                        <div className="text-xs text-slate-400 mt-0.5">{cat.desc}</div>
+                        <div className="font-bold text-sm text-[#1A2825]">{cat.label}</div>
+                        <div className="text-xs text-[#5C6E6A] mt-0.5">{cat.desc}</div>
                       </div>
                     </div>
                   </div>
@@ -363,7 +358,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-all"
+                className="px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 cursor-pointer transition-all shadow-sm"
               >
                 <span>Continue</span>
                 <ArrowRight className="w-4 h-4" />
@@ -374,30 +369,33 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 2: TITLE & DESCRIPTION */}
         {step === 2 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-1">Describe The Issue</h2>
-              <p className="text-slate-400 text-sm">
-                Provide a clear title and specific details to help municipal inspectors locate and fix it.
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                INCIDENT PARTICULARS
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mb-1">Describe The Issue</h2>
+              <p className="text-[#5C6E6A] text-sm">
+                Provide an accurate title and specific details to assist municipal response crews.
               </p>
             </div>
 
             <div className="space-y-5 mb-8">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                   Complaint Title *
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Deep pothole on North Avenue near bus stop"
+                  placeholder="e.g. Deep pothole on North Avenue near bus shelter"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition-all"
+                  className="w-full bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] focus:ring-1 focus:ring-[#1B3E36] rounded-xl px-4 py-3 text-sm text-[#1A2825] placeholder-[#8A9894] outline-none transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                   Detailed Description *
                 </label>
                 <textarea
@@ -405,7 +403,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   placeholder="Describe the severity, exact landmark, whether it poses immediate hazard to pedestrians or traffic..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none transition-all resize-none"
+                  className="w-full bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] focus:ring-1 focus:ring-[#1B3E36] rounded-xl px-4 py-3 text-sm text-[#1A2825] placeholder-[#8A9894] outline-none transition-all resize-none"
                 />
               </div>
             </div>
@@ -414,7 +412,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(1)}
-                className="px-4 py-2.5 text-slate-400 hover:text-white text-sm font-medium flex items-center gap-1.5"
+                className="px-4 py-2.5 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -424,7 +422,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                 type="button"
                 disabled={!title.trim() || !description.trim()}
                 onClick={() => setStep(3)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-all disabled:opacity-40"
+                className="px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 cursor-pointer transition-all disabled:opacity-40 shadow-sm"
               >
                 <span>Continue</span>
                 <ArrowRight className="w-4 h-4" />
@@ -435,22 +433,25 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 3: PHOTO EVIDENCE & AI DETECTION */}
         {step === 3 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-1">Upload Photo Evidence</h2>
-              <p className="text-slate-400 text-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                EVIDENCE SUBMISSION
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mb-1">Upload Photo Evidence</h2>
+              <p className="text-[#5C6E6A] text-sm">
                 Visual proof accelerates municipal verification and field crew dispatch.
               </p>
             </div>
 
             {/* Upload Area */}
             <div className="mb-6">
-              <label className="border-2 border-dashed border-slate-800 hover:border-blue-500/50 bg-slate-950/60 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-colors group">
-                <div className="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
+              <label className="border-2 border-dashed border-[#D4CEBF] hover:border-[#1B3E36] bg-[#F4F0E6]/50 rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer transition-colors group">
+                <div className="w-12 h-12 rounded-xl bg-[#1B3E36]/10 text-[#1B3E36] flex items-center justify-center mb-3 group-hover:scale-105 transition-transform">
                   <Camera className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-semibold text-white mb-1">Click or Tap to Upload Photo</span>
-                <span className="text-xs text-slate-500">Supports JPG, PNG, WEBP</span>
+                <span className="text-sm font-bold font-serif text-[#1A2825] mb-1">Click or Tap to Upload Photo</span>
+                <span className="text-xs text-[#5C6E6A] font-mono">Supports JPG, PNG, WEBP</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -465,21 +466,21 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <div className="space-y-4 mb-8">
                 <div className="flex gap-3 overflow-x-auto pb-2">
                   {mediaUrls.map((url, i) => (
-                    <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-slate-800 shrink-0">
+                    <div key={i} className="relative w-28 h-28 rounded-xl overflow-hidden border border-[#D4CEBF] shrink-0 shadow-xs">
                       <img src={url} alt="Evidence" className="w-full h-full object-cover" />
                     </div>
                   ))}
                 </div>
 
                 {/* AI Assistant Card */}
-                <div className="bg-blue-950/30 border border-blue-500/20 rounded-2xl p-5">
+                <div className="bg-[#FAF9F5] border border-[#D4CEBF] rounded-2xl p-5 shadow-xs">
                   <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2 text-blue-400 font-semibold text-xs uppercase tracking-wider">
-                      <Sparkles className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-[#1B3E36] font-bold text-xs uppercase tracking-wider font-mono">
+                      <Sparkles className="w-4 h-4 text-[#E5A952]" />
                       <span>CivicFix AI Computer Vision</span>
                     </div>
                     {analyzingAI && (
-                      <div className="flex items-center gap-1.5 text-xs text-blue-300">
+                      <div className="flex items-center gap-1.5 text-xs text-[#1B3E36]">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         <span>Analyzing photo...</span>
                       </div>
@@ -489,36 +490,36 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   {aiResult && !analyzingAI ? (
                     <div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-3">
-                        <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                          <div className="text-[10px] text-slate-400 font-medium">Detected Issue</div>
-                          <div className="text-sm font-bold text-white">{aiResult.predictedCategory}</div>
+                        <div className="bg-[#FFFFFF] p-2.5 rounded-xl border border-[#E5E1D5]">
+                          <div className="text-[10px] text-[#5C6E6A] font-medium font-mono uppercase">Detected Issue</div>
+                          <div className="text-sm font-bold text-[#1A2825]">{aiResult.predictedCategory}</div>
                         </div>
-                        <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                          <div className="text-[10px] text-slate-400 font-medium">Confidence</div>
-                          <div className="text-sm font-bold text-emerald-400">
+                        <div className="bg-[#FFFFFF] p-2.5 rounded-xl border border-[#E5E1D5]">
+                          <div className="text-[10px] text-[#5C6E6A] font-medium font-mono uppercase">Confidence</div>
+                          <div className="text-sm font-bold text-[#2E6F5E]">
                             {Math.round(aiResult.confidence * 100)}%
                           </div>
                         </div>
-                        <div className="bg-slate-900/80 p-2.5 rounded-xl border border-slate-800">
-                          <div className="text-[10px] text-slate-400 font-medium">Suggested Severity</div>
-                          <div className="text-sm font-bold text-amber-400">{aiResult.suggestedSeverity}</div>
+                        <div className="bg-[#FFFFFF] p-2.5 rounded-xl border border-[#E5E1D5]">
+                          <div className="text-[10px] text-[#5C6E6A] font-medium font-mono uppercase">Suggested Severity</div>
+                          <div className="text-sm font-bold text-[#B06D44]">{aiResult.suggestedSeverity}</div>
                         </div>
                       </div>
 
-                      <p className="text-xs text-slate-300 mb-3 leading-relaxed">
+                      <p className="text-xs text-[#5C6E6A] mb-3 leading-relaxed">
                         <em>Observation:</em> {aiResult.explanation}
                       </p>
 
                       <button
                         type="button"
                         onClick={handleApplyAISuggestions}
-                        className="px-3.5 py-1.5 bg-blue-600/30 hover:bg-blue-600/50 border border-blue-500/40 text-blue-300 text-xs font-semibold rounded-lg transition-colors cursor-pointer"
+                        className="px-3.5 py-1.5 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] text-xs font-bold rounded-lg transition-colors cursor-pointer uppercase tracking-wider"
                       >
                         Apply AI Suggested Category & Severity
                       </button>
                     </div>
                   ) : !analyzingAI && (
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-[#5C6E6A]">
                       Upload a photo to automatically identify the civic issue and receive smart category suggestions.
                     </p>
                   )}
@@ -530,7 +531,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                className="px-4 py-2.5 text-slate-400 hover:text-white text-sm font-medium flex items-center gap-1.5"
+                className="px-4 py-2.5 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -539,7 +540,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(4)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-all"
+                className="px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 cursor-pointer transition-all shadow-sm"
               >
                 <span>Continue</span>
                 <ArrowRight className="w-4 h-4" />
@@ -550,11 +551,14 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 4: LOCATION & GPS */}
         {step === 4 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-4 gap-3">
               <div>
-                <h2 className="text-2xl font-bold text-white mb-1">Set Issue Location</h2>
-                <p className="text-slate-400 text-sm">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                  GEOSPATIAL VERIFICATION
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mb-1">Set Issue Location</h2>
+                <p className="text-[#5C6E6A] text-sm">
                   Pinpoint defect coordinates via live satellite GPS or adjust the pin manually.
                 </p>
               </div>
@@ -564,7 +568,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   type="button"
                   onClick={handleUseCurrentLocation}
                   disabled={locatingGPS}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-md shadow-blue-600/20"
+                  className="px-4 py-2 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all self-start sm:self-auto cursor-pointer shadow-sm"
                 >
                   {locatingGPS ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -579,38 +583,38 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             {/* Live GPS Telemetry & Status Card */}
             <div className={`mb-4 p-3.5 rounded-2xl border transition-all ${
               isTracking && gpsLocation
-                ? 'bg-emerald-950/30 border-emerald-800/60'
-                : 'bg-slate-950 border-slate-800'
+                ? 'bg-[#E6F2ED] border-[#A8CEBE]'
+                : 'bg-[#FAF9F5] border-[#E5E1D5]'
             }`}>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
                   <span className="relative flex h-3 w-3">
                     {isTracking && (
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2E6F5E] opacity-75"></span>
                     )}
                     <span
                       className={`relative inline-flex rounded-full h-3 w-3 ${
-                        isTracking ? 'bg-emerald-500' : 'bg-slate-500'
+                        isTracking ? 'bg-[#2E6F5E]' : 'bg-[#5C6E6A]'
                       }`}
                     ></span>
                   </span>
                   <div>
-                    <div className="text-xs font-bold text-white flex items-center gap-2">
+                    <div className="text-xs font-bold text-[#1A2825] flex items-center gap-2">
                       <span>{isTracking ? 'Live GPS Satellite Tracking: Active' : 'Live GPS Detection: Idle'}</span>
                       {locationAccuracy !== null && (
                         <span className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-bold ${
                           locationAccuracy <= 10
-                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                            : 'bg-blue-500/20 text-blue-300 border border-blue-500/30'
+                            ? 'bg-[#1B3E36] text-[#FAF9F5]'
+                            : 'bg-[#E5A952] text-[#102621]'
                         }`}>
                           ±{locationAccuracy}m {locationAccuracy <= 10 ? 'High Precision' : 'Estimated'}
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                    <div className="text-[11px] text-[#5C6E6A] font-mono mt-0.5">
                       Lat: {coords.lat.toFixed(6)} • Lng: {coords.lng.toFixed(6)}
                       {gpsLocation?.speed !== null && gpsLocation?.speed !== undefined && gpsLocation.speed > 0 && (
-                        <span className="ml-2 text-emerald-400">• Speed: {gpsLocation.speed} km/h</span>
+                        <span className="ml-2 text-[#2E6F5E] font-semibold">• Speed: {gpsLocation.speed} km/h</span>
                       )}
                     </div>
                   </div>
@@ -622,14 +626,14 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                     <button
                       type="button"
                       onClick={() => setLiveSync(!liveSync)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-1.5 transition-all cursor-pointer ${
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider border flex items-center gap-1.5 transition-all cursor-pointer ${
                         liveSync
-                          ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
-                          : 'bg-slate-800 text-slate-400 border-slate-700 hover:text-white'
+                          ? 'bg-[#1B3E36] text-[#FAF9F5] border-[#1B3E36]'
+                          : 'bg-[#FFFFFF] text-[#5C6E6A] border-[#D4CEBF] hover:text-[#1A2825]'
                       }`}
                       title={liveSync ? 'Pin automatically follows your physical movement' : 'Click to lock pin to your live movement'}
                     >
-                      <Crosshair className={`w-3.5 h-3.5 ${liveSync ? 'animate-pulse text-emerald-400' : ''}`} />
+                      <Crosshair className={`w-3.5 h-3.5 ${liveSync ? 'animate-pulse text-[#E5A952]' : ''}`} />
                       <span>{liveSync ? 'Auto-Sync Pin: ON' : 'Auto-Sync Pin: OFF'}</span>
                     </button>
                   )}
@@ -638,10 +642,10 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                     <button
                       type="button"
                       onClick={startTracking}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-1.5 bg-[#FAF9F5] hover:bg-[#F2EFE7] text-[#1A2825] border border-[#D4CEBF] rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
                     >
-                      <Radio className="w-3.5 h-3.5 text-blue-400" />
-                      <span>Enable Live Tracking</span>
+                      <Radio className="w-3.5 h-3.5 text-[#1B3E36]" />
+                      <span>Enable Tracking</span>
                     </button>
                   )}
                 </div>
@@ -649,7 +653,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             </div>
 
             {gpsError && (
-              <div className="mb-4 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs flex items-center gap-2">
+              <div className="mb-4 p-3 rounded-xl bg-[#FFF1E6] border border-[#F4C49E] text-[#8A3B2A] text-xs flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{gpsError}</span>
               </div>
@@ -660,15 +664,15 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <div className="flex gap-2">
                 <input
                   type="text"
-                  placeholder="Search Indian city, district, street, or landmark (e.g. Visakhapatnam, Hyderabad, Delhi)..."
+                  placeholder="Search city, district, street, or landmark (e.g. Visakhapatnam, Kukatpally, Delhi)..."
                   value={addressSearchInput}
                   onChange={(e) => setAddressSearchInput(e.target.value)}
-                  className="flex-1 bg-slate-950 border border-slate-800 focus:border-blue-500 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-500 outline-none transition-all"
+                  className="flex-1 bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] focus:ring-1 focus:ring-[#1B3E36] rounded-xl px-4 py-2.5 text-xs text-[#1A2825] placeholder-[#8A9894] outline-none transition-all"
                 />
                 <button
                   type="submit"
                   disabled={searchingAddress || !addressSearchInput.trim()}
-                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl transition-colors cursor-pointer shrink-0 disabled:opacity-50"
+                  className="px-4 py-2.5 bg-[#FAF9F5] hover:bg-[#F2EFE7] border border-[#D4CEBF] text-[#1A2825] text-xs font-bold uppercase tracking-wider rounded-xl transition-colors cursor-pointer shrink-0 disabled:opacity-50"
                 >
                   {searchingAddress ? 'Searching...' : 'Go to Location'}
                 </button>
@@ -677,15 +681,14 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
             {/* Quick Indian City Selection Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto pb-3 mb-2 text-xs">
-              <span className="text-[11px] font-bold text-slate-400 shrink-0">Quick Jump:</span>
+              <span className="text-[11px] font-bold text-[#5C6E6A] uppercase font-mono shrink-0">Quick Jump:</span>
               {[
+                { name: 'Hyderabad (Kukatpally)', lat: 17.4947, lng: 78.3996, addr: 'Near Kukatpally Metro Station, Hyderabad, 500072' },
                 { name: 'Delhi NCR', lat: 28.6139, lng: 77.2090, addr: 'Connaught Place, New Delhi, 110001' },
                 { name: 'Visakhapatnam', lat: 17.7142, lng: 83.3236, addr: 'RK Beach Road, Visakhapatnam, 530017' },
-                { name: 'Hyderabad', lat: 17.4498, lng: 78.3789, addr: 'Hitec City, Madhapur, Hyderabad, 500081' },
                 { name: 'Bengaluru', lat: 12.9754, lng: 77.6066, addr: 'MG Road, Central Bengaluru, 560001' },
                 { name: 'Mumbai', lat: 18.9438, lng: 72.8234, addr: 'Marine Drive, Mumbai, 400020' },
                 { name: 'Chennai', lat: 13.0827, lng: 80.2707, addr: 'Anna Salai, Chennai, 600002' },
-                { name: 'Kolkata', lat: 22.5726, lng: 88.3639, addr: 'Park Street, Kolkata, 700016' },
               ].map((c) => (
                 <button
                   key={c.name}
@@ -695,7 +698,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                     setCoords({ lat: c.lat, lng: c.lng });
                     setAddress(c.addr);
                   }}
-                  className="px-2.5 py-1 rounded-xl text-xs font-medium bg-slate-950 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all shrink-0 cursor-pointer"
+                  className="px-2.5 py-1 rounded-xl text-xs font-semibold bg-[#FAF9F5] hover:bg-[#EAE6DA] border border-[#D4CEBF] text-[#1A2825] transition-all shrink-0 cursor-pointer"
                 >
                   {c.name}
                 </button>
@@ -703,46 +706,44 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             </div>
 
             {/* Address Display */}
-            <div className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 mb-4 flex items-center gap-3">
-              <MapPin className="w-5 h-5 text-red-400 shrink-0" />
+            <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-xl p-3.5 mb-4 flex items-center gap-3">
+              <MapPin className="w-5 h-5 text-[#B06D44] shrink-0" />
               <div className="flex-1">
-                <div className="text-[11px] text-slate-400 font-semibold uppercase flex items-center gap-2">
+                <div className="text-[11px] text-[#5C6E6A] font-bold uppercase tracking-wider flex items-center gap-2 font-mono">
                   <span>Resolved Address</span>
                   {liveSync && (
-                    <span className="text-[9px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.2 rounded uppercase">
+                    <span className="text-[9px] bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE] px-1.5 py-0.2 rounded uppercase font-bold">
                       Live GPS Sync
                     </span>
                   )}
                 </div>
-                <div className="text-sm text-white font-medium">{address}</div>
+                <div className="text-sm text-[#1A2825] font-semibold">{address}</div>
               </div>
-              <div className="text-[10px] text-slate-400 font-mono">
+              <div className="text-[10px] text-[#5C6E6A] font-mono">
                 {coords.lat.toFixed(4)}, {coords.lng.toFixed(4)}
               </div>
             </div>
 
             {/* Draggable Map Picker */}
-            <div className="mb-8">
+            <div className="mb-8 border border-[#D4CEBF] rounded-2xl overflow-hidden shadow-xs">
               <CivicMap
                 pickerMode={true}
                 pickerCoords={coords}
                 userLocation={gpsLocation}
                 onPickerCoordsChange={(c) => {
-                  setLiveSync(false); // Citizen manually placed/dragged pin
+                  setLiveSync(false);
                   setCoords(c);
                   reverseGeocode(c.lat, c.lng);
                 }}
                 heightClass="h-[380px]"
               />
-              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2">
-                <span>
-                  Tip: Drag the red pin to fine-tune exact defect spot.
-                </span>
+              <div className="p-2.5 bg-[#FAF9F5] border-t border-[#E5E1D5] flex items-center justify-between text-[11px] text-[#5C6E6A]">
+                <span>Tip: Drag the pin to fine-tune exact defect spot.</span>
                 {!liveSync && isTracking && (
                   <button
                     type="button"
                     onClick={() => setLiveSync(true)}
-                    className="text-blue-400 hover:text-blue-300 font-semibold underline cursor-pointer"
+                    className="text-[#1B3E36] hover:underline font-bold cursor-pointer"
                   >
                     Snap back to Live GPS
                   </button>
@@ -754,7 +755,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(3)}
-                className="px-4 py-2.5 text-slate-400 hover:text-white text-sm font-medium flex items-center gap-1.5"
+                className="px-4 py-2.5 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -763,7 +764,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => setStep(5)}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-xl flex items-center gap-2 cursor-pointer transition-all"
+                className="px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 cursor-pointer transition-all shadow-sm"
               >
                 <span>Review & Verify</span>
                 <ArrowRight className="w-4 h-4" />
@@ -774,22 +775,25 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 5: VERIFICATION & DUPLICATE CHECK */}
         {step === 5 && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 shadow-sm">
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-white mb-1">Review & Submit</h2>
-              <p className="text-slate-400 text-sm">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                PRE-SUBMISSION AUDIT
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mb-1">Review & Submit</h2>
+              <p className="text-[#5C6E6A] text-sm">
                 Verify details before submitting your report to the municipal resolution queue.
               </p>
             </div>
 
             {/* Potential Duplicate Alert */}
             {duplicates.length > 0 && (
-              <div className="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-5 mb-6">
-                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm mb-2">
+              <div className="bg-[#FFF1E6] border border-[#F4C49E] rounded-2xl p-5 mb-6">
+                <div className="flex items-center gap-2 text-[#8A3B2A] font-bold text-sm mb-2">
                   <AlertCircle className="w-5 h-5 shrink-0" />
                   <span>A similar issue has already been reported nearby</span>
                 </div>
-                <p className="text-xs text-slate-300 mb-4 leading-relaxed">
+                <p className="text-xs text-[#5C6E6A] mb-4 leading-relaxed">
                   We found {duplicates.length} active complaint(s) in this immediate vicinity:
                 </p>
 
@@ -797,18 +801,18 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   {duplicates.map((dup) => (
                     <div
                       key={dup.complaintId}
-                      className="bg-slate-950/80 border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs"
+                      className="bg-[#FFFFFF] border border-[#F4C49E] p-3 rounded-xl flex items-center justify-between text-xs"
                     >
                       <div>
-                        <div className="font-semibold text-white">{dup.title}</div>
-                        <div className="text-slate-400">
+                        <div className="font-bold text-[#1A2825]">{dup.title}</div>
+                        <div className="text-[#5C6E6A]">
                           {dup.complaintNumber} • {dup.distanceMeters}m away • {dup.status}
                         </div>
                       </div>
                       <button
                         type="button"
                         onClick={() => navigate(`/track?id=${dup.complaintNumber}`)}
-                        className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs"
+                        className="px-2.5 py-1 bg-[#FAF9F5] hover:bg-[#F2EFE7] border border-[#D4CEBF] text-[#1A2825] font-semibold rounded-lg text-xs"
                       >
                         View Report
                       </button>
@@ -816,12 +820,12 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   ))}
                 </div>
 
-                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-200">
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-[#1A2825] font-medium">
                   <input
                     type="checkbox"
                     checked={duplicateConfirmed}
                     onChange={(e) => setDuplicateConfirmed(e.target.checked)}
-                    className="rounded border-slate-700 text-blue-600 focus:ring-0"
+                    className="rounded border-[#D4CEBF] text-[#1B3E36] focus:ring-0"
                   />
                   <span>This is a distinct problem / I wish to report separately</span>
                 </label>
@@ -831,7 +835,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             {/* Severity and Priority selection */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                   Assessed Severity
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -840,10 +844,10 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                       key={sev}
                       type="button"
                       onClick={() => setSeverity(sev)}
-                      className={`py-2 text-xs font-bold rounded-xl border transition-all ${
+                      className={`py-2 text-xs font-bold rounded-xl border transition-all uppercase tracking-wider ${
                         severity === sev
-                          ? 'bg-blue-600 text-white border-blue-500'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                          ? 'bg-[#1B3E36] text-[#FAF9F5] border-[#1B3E36]'
+                          : 'bg-[#FFFFFF] text-[#5C6E6A] border-[#D4CEBF] hover:text-[#1A2825]'
                       }`}
                     >
                       {sev}
@@ -853,7 +857,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                   Urgency Level
                 </label>
                 <div className="grid grid-cols-2 gap-2">
@@ -862,10 +866,10 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                       key={pri}
                       type="button"
                       onClick={() => setPriority(pri)}
-                      className={`py-2 text-xs font-bold rounded-xl border transition-all ${
+                      className={`py-2 text-xs font-bold rounded-xl border transition-all uppercase tracking-wider ${
                         priority === pri
-                          ? 'bg-indigo-600 text-white border-indigo-500'
-                          : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+                          ? 'bg-[#B06D44] text-[#FAF9F5] border-[#B06D44]'
+                          : 'bg-[#FFFFFF] text-[#5C6E6A] border-[#D4CEBF] hover:text-[#1A2825]'
                       }`}
                     >
                       {pri}
@@ -876,31 +880,31 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
             </div>
 
             {/* Summary Box */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 mb-6 text-xs space-y-2.5">
+            <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 mb-6 text-xs space-y-2.5 shadow-xs">
               <div className="flex justify-between">
-                <span className="text-slate-400">Category:</span>
-                <span className="text-white font-semibold">{category}</span>
+                <span className="text-[#5C6E6A] uppercase font-mono">Category:</span>
+                <span className="text-[#1A2825] font-bold">{category}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Title:</span>
-                <span className="text-white font-semibold">{title}</span>
+                <span className="text-[#5C6E6A] uppercase font-mono">Title:</span>
+                <span className="text-[#1A2825] font-semibold">{title}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Location:</span>
-                <span className="text-white font-semibold">{address}</span>
+                <span className="text-[#5C6E6A] uppercase font-mono">Location:</span>
+                <span className="text-[#1A2825] font-semibold">{address}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Evidence Attached:</span>
-                <span className="text-emerald-400 font-semibold">{mediaUrls.length} file(s)</span>
+                <span className="text-[#5C6E6A] uppercase font-mono">Evidence Attached:</span>
+                <span className="text-[#2E6F5E] font-bold">{mediaUrls.length} file(s)</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Identity:</span>
-                <span className="text-blue-400 font-semibold">Anonymous Citizen</span>
+                <span className="text-[#5C6E6A] uppercase font-mono">Citizen Privacy:</span>
+                <span className="text-[#1B3E36] font-bold">Anonymous Municipal ID</span>
               </div>
             </div>
 
             {submitError && (
-              <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm flex items-start gap-2.5">
+              <div className="mb-6 p-4 rounded-xl bg-[#FFF1E6] border border-[#F4C49E] text-[#8A3B2A] text-sm flex items-start gap-2.5">
                 <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
                 <span>{submitError}</span>
               </div>
@@ -911,7 +915,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                 type="button"
                 onClick={() => setStep(4)}
                 disabled={submitting}
-                className="px-4 py-2.5 text-slate-400 hover:text-white text-sm font-medium flex items-center gap-1.5"
+                className="px-4 py-2.5 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Back</span>
@@ -921,16 +925,16 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={submitting}
-                className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm rounded-xl flex items-center gap-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
+                className="px-8 py-3.5 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-md transition-all cursor-pointer disabled:opacity-50"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#E5A952]" />
                     <span>Submitting to Database...</span>
                   </>
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4 text-[#E5A952]" />
                     <span>Submit Civic Report</span>
                   </>
                 )}
@@ -941,41 +945,41 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
 
         {/* STEP 6: SUBMISSION CONFIRMATION */}
         {step === 6 && createdComplaint && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 text-center">
-            <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-8 text-center shadow-sm">
+            <div className="w-16 h-16 rounded-2xl bg-[#E6F2ED] border border-[#A8CEBE] text-[#1B4D3E] flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-9 h-9" />
             </div>
 
-            <div className="inline-block px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
-              Database Insertion Confirmed
+            <div className="inline-block px-3 py-1 bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE] rounded-full text-xs font-bold uppercase tracking-wider mb-2 font-mono">
+              DATABASE REGISTRATION CONFIRMED
             </div>
 
-            <h2 className="text-3xl font-extrabold text-white mb-2">Complaint Submitted Successfully</h2>
-            <p className="text-slate-400 text-sm max-w-md mx-auto mb-8">
+            <h2 className="text-3xl font-serif font-bold text-[#1A2825] mb-2">Complaint Submitted Successfully</h2>
+            <p className="text-[#5C6E6A] text-sm max-w-md mx-auto mb-8 font-normal">
               Your civic report has been securely registered in the municipal database and routed to the responsible department.
             </p>
 
             {/* Tracking Badge */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 max-w-md mx-auto mb-8 text-left space-y-3">
-              <div className="flex justify-between items-center pb-3 border-b border-slate-800">
-                <span className="text-xs text-slate-400">Complaint ID:</span>
-                <span className="font-mono text-base font-extrabold text-blue-400">
+            <div className="bg-[#FFFFFF] border border-[#D4CEBF] rounded-2xl p-6 max-w-md mx-auto mb-8 text-left space-y-3 shadow-xs">
+              <div className="flex justify-between items-center pb-3 border-b border-[#E5E1D5]">
+                <span className="text-xs text-[#5C6E6A] uppercase font-mono font-bold">Complaint ID:</span>
+                <span className="font-mono text-base font-extrabold text-[#1B3E36]">
                   {createdComplaint.complaintNumber}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">Category:</span>
-                <span className="text-xs font-semibold text-white">{createdComplaint.category}</span>
+                <span className="text-xs text-[#5C6E6A] uppercase font-mono font-bold">Category:</span>
+                <span className="text-xs font-bold text-[#1A2825]">{createdComplaint.category}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">Status:</span>
-                <span className="text-xs font-bold px-2 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <span className="text-xs text-[#5C6E6A] uppercase font-mono font-bold">Status:</span>
+                <span className="text-xs font-bold px-2 py-0.5 rounded bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE]">
                   {createdComplaint.status}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-xs text-slate-400">Public Anonymity:</span>
-                <span className="text-xs font-mono text-emerald-400">
+                <span className="text-xs text-[#5C6E6A] uppercase font-mono font-bold">Public Anonymity:</span>
+                <span className="text-xs font-mono text-[#2E6F5E] font-bold">
                   {createdComplaint.anonymousPublicId}
                 </span>
               </div>
@@ -985,7 +989,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
               <button
                 type="button"
                 onClick={() => navigate(`/track?id=${createdComplaint.complaintNumber}`)}
-                className="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition-all cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer shadow-sm"
               >
                 Track This Complaint Now
               </button>
@@ -999,7 +1003,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                   setMediaUrls([]);
                   setCreatedComplaint(null);
                 }}
-                className="w-full sm:w-auto px-6 py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-sm rounded-xl transition-all cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 bg-[#FAF9F5] hover:bg-[#F2EFE7] border border-[#D4CEBF] text-[#1A2825] font-bold text-xs uppercase tracking-wider rounded-xl transition-all cursor-pointer"
               >
                 Report Another Issue
               </button>

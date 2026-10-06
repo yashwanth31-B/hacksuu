@@ -1,28 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
-import { CivicMap, MapComplaint } from '../components/CivicMap.tsx';
+import { CivicMap } from '../components/CivicMap.tsx';
 import { getApiUrl } from '../lib/api.ts';
 import {
   Shield,
-  Layers,
-  MapPin,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Users,
   Search,
-  Filter,
-  Activity,
   Plus,
   Trash2,
-  FileText,
-  Clock,
-  Wrench,
-  ShieldAlert,
-  ArrowRight,
-  Eye,
-  CheckSquare,
   Lock,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -41,8 +27,8 @@ type AdminTab =
   | 'audit'
   | 'health';
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
-  const { user, profile, getAuthToken } = useAuth();
+export const AdminDashboard: React.FC<AdminDashboardProps> = () => {
+  const { user, getAuthToken } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   // Stats & Complaints
@@ -59,7 +45,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [categoryFilter, setCategoryFilter] = useState('ALL');
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   // Selected item modal
   const [selectedComplaint, setSelectedComplaint] = useState<any | null>(null);
@@ -220,37 +206,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   });
 
   return (
-    <div className="min-h-screen bg-slate-950 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Top Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-slate-800 gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-6 border-b border-[#E5E1D5] gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                Municipal Authority Portal
+              <span className="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#B06D44]/10 text-[#B06D44] border border-[#B06D44]/20 font-mono">
+                MUNICIPAL AUTHORITY PORTAL
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#1A2825] mt-1">
               CivicFix Operations Command
             </h1>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-slate-400">
-            <Shield className="w-4 h-4 text-emerald-400" />
-            <span>Authenticated Administrator: <strong className="text-white">{user?.email}</strong></span>
+          <div className="flex items-center gap-2 text-xs text-[#5C6E6A]">
+            <Shield className="w-4 h-4 text-[#1B3E36]" />
+            <span>Authenticated Administrator: <strong className="text-[#1A2825]">{user?.email}</strong></span>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-2 overflow-x-auto pb-2 border-b border-slate-800 text-xs font-semibold">
+        <div className="flex gap-2 overflow-x-auto pb-2 border-b border-[#E5E1D5] text-xs font-bold uppercase tracking-wider font-mono">
           {[
             { id: 'overview', label: 'Overview & KPIs' },
             { id: 'complaints', label: `Complaints (${complaintsList.length})` },
             { id: 'map', label: 'Admin Live Map' },
-            { id: 'verification', label: 'Resolution Verification' },
+            { id: 'verification', label: 'Verification' },
             { id: 'crews', label: 'Response Crews' },
-            { id: 'fraud', label: 'Fraud & Risk Review' },
-            { id: 'duplicates', label: 'Duplicate Detection' },
+            { id: 'fraud', label: 'Fraud Review' },
+            { id: 'duplicates', label: 'Duplicate Check' },
             { id: 'administrators', label: 'Admin Accounts' },
             { id: 'audit', label: 'Audit Logs' },
             { id: 'health', label: 'System Health' },
@@ -258,10 +244,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as AdminTab)}
-              className={`px-4 py-2.5 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
+              className={`px-3.5 py-2 rounded-xl transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                  ? 'bg-[#1B3E36] text-[#FAF9F5] shadow-xs'
+                  : 'text-[#5C6E6A] hover:text-[#1A2825] hover:bg-[#FAF9F5]'
               }`}
             >
               {tab.label}
@@ -273,39 +259,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <div className="text-xs font-bold text-slate-400 uppercase">Total Reports</div>
-                <div className="text-3xl font-extrabold text-white mt-1">{stats?.total ?? 0}</div>
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-5 shadow-xs">
+                <div className="text-xs font-bold text-[#5C6E6A] uppercase font-mono">Total Reports</div>
+                <div className="text-3xl font-serif font-black text-[#1A2825] mt-1">{stats?.total ?? 0}</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <div className="text-xs font-bold text-slate-400 uppercase">Pending Review</div>
-                <div className="text-3xl font-extrabold text-amber-400 mt-1">{stats?.pending ?? 0}</div>
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-5 shadow-xs">
+                <div className="text-xs font-bold text-[#5C6E6A] uppercase font-mono">Pending Review</div>
+                <div className="text-3xl font-serif font-black text-[#B06D44] mt-1">{stats?.pending ?? 0}</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <div className="text-xs font-bold text-slate-400 uppercase">Active Dispatched</div>
-                <div className="text-3xl font-extrabold text-blue-400 mt-1">{stats?.inProgress ?? 0}</div>
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-5 shadow-xs">
+                <div className="text-xs font-bold text-[#5C6E6A] uppercase font-mono">Active Dispatched</div>
+                <div className="text-3xl font-serif font-black text-[#1B3E36] mt-1">{stats?.inProgress ?? 0}</div>
               </div>
-              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-5">
-                <div className="text-xs font-bold text-slate-400 uppercase">Permanently Resolved</div>
-                <div className="text-3xl font-extrabold text-emerald-400 mt-1">{stats?.resolved ?? 0}</div>
+              <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-5 shadow-xs">
+                <div className="text-xs font-bold text-[#5C6E6A] uppercase font-mono">Permanently Resolved</div>
+                <div className="text-3xl font-serif font-black text-[#2E6F5E] mt-1">{stats?.resolved ?? 0}</div>
               </div>
             </div>
 
             {/* Quick Actions & Recent Queue */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+            <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-base font-bold text-white">Recent Intake Reports</h2>
+                <h2 className="text-base font-serif font-bold text-[#1A2825]">Recent Intake Reports</h2>
                 <button
                   onClick={() => setActiveTab('complaints')}
-                  className="text-xs text-blue-400 hover:underline"
+                  className="text-xs font-mono font-bold text-[#1B3E36] hover:underline cursor-pointer"
                 >
-                  View All Complaints →
+                  VIEW ALL COMPLAINTS →
                 </button>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider">
+                  <thead className="bg-[#F4F0E6] text-[#5C6E6A] font-mono font-bold uppercase tracking-wider">
                     <tr>
                       <th className="p-3">Ref ID</th>
                       <th className="p-3">Category</th>
@@ -316,27 +302,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                       <th className="p-3 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y divide-[#E5E1D5]">
                     {complaintsList.slice(0, 6).map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-800/40">
-                        <td className="p-3 font-mono font-bold text-blue-400">{c.complaintNumber}</td>
-                        <td className="p-3 font-semibold text-slate-200">{c.category}</td>
-                        <td className="p-3 text-white max-w-xs truncate">{c.title}</td>
+                      <tr key={c.id} className="hover:bg-[#FFFFFF]">
+                        <td className="p-3 font-mono font-bold text-[#1B3E36]">{c.complaintNumber}</td>
+                        <td className="p-3 font-semibold text-[#1A2825]">{c.category}</td>
+                        <td className="p-3 text-[#1A2825] max-w-xs truncate">{c.title}</td>
                         <td className="p-3">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 uppercase font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#D4CEBF] uppercase font-bold text-[10px] text-[#1A2825]">
                             {c.status}
                           </span>
                         </td>
                         <td className="p-3">
-                          <span className="font-bold text-[10px] uppercase text-amber-400">
+                          <span className="font-bold text-[10px] uppercase text-[#B06D44] font-mono">
                             {c.priority}
                           </span>
                         </td>
-                        <td className="p-3 text-slate-400">{new Date(c.createdAt).toLocaleDateString()}</td>
+                        <td className="p-3 text-[#5C6E6A]">{new Date(c.createdAt).toLocaleDateString()}</td>
                         <td className="p-3 text-right">
                           <button
                             onClick={() => setSelectedComplaint(c)}
-                            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg"
+                            className="px-2.5 py-1 bg-[#FAF9F5] hover:bg-[#F2EFE7] border border-[#D4CEBF] text-[#1A2825] font-bold text-xs uppercase tracking-wider rounded-lg cursor-pointer"
                           >
                             Manage
                           </button>
@@ -354,22 +340,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
         {activeTab === 'complaints' && (
           <div className="space-y-4">
             {/* Filter Bar */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center gap-3">
-              <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-xl px-3 py-2">
-                <Search className="w-4 h-4 text-slate-500" />
+            <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-2xl p-4 flex flex-wrap items-center gap-3 shadow-xs">
+              <div className="flex-1 min-w-[200px] flex items-center gap-2 bg-[#FFFFFF] border border-[#D4CEBF] rounded-xl px-3 py-2">
+                <Search className="w-4 h-4 text-[#5C6E6A]" />
                 <input
                   type="text"
                   placeholder="Search by ID, keyword, or address..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="bg-transparent border-none text-xs text-white placeholder-slate-500 outline-none w-full"
+                  className="bg-transparent border-none text-xs text-[#1A2825] placeholder-[#8A9894] outline-none w-full"
                 />
               </div>
 
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3 py-2 outline-none"
+                className="bg-[#FFFFFF] border border-[#D4CEBF] text-xs text-[#1A2825] font-mono rounded-xl px-3 py-2 outline-none"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="REPORTED">Reported</option>
@@ -384,7 +370,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="bg-slate-950 border border-slate-800 text-xs text-white rounded-xl px-3 py-2 outline-none"
+                className="bg-[#FFFFFF] border border-[#D4CEBF] text-xs text-[#1A2825] font-mono rounded-xl px-3 py-2 outline-none"
               >
                 <option value="ALL">All Categories</option>
                 <option value="Pothole">Pothole</option>
@@ -397,10 +383,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             </div>
 
             {/* Complaints Table */}
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden">
+            <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl overflow-hidden shadow-xs">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-950 text-slate-400 uppercase tracking-wider">
+                  <thead className="bg-[#F4F0E6] text-[#5C6E6A] font-mono font-bold uppercase tracking-wider">
                     <tr>
                       <th className="p-3.5">Complaint ID</th>
                       <th className="p-3.5">Category</th>
@@ -411,30 +397,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                       <th className="p-3.5 text-right">Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-800">
+                  <tbody className="divide-y divide-[#E5E1D5]">
                     {filteredComplaints.map((c) => (
-                      <tr key={c.id} className="hover:bg-slate-800/40">
-                        <td className="p-3.5 font-mono font-bold text-blue-400">{c.complaintNumber}</td>
-                        <td className="p-3.5 font-semibold text-slate-200">{c.category}</td>
+                      <tr key={c.id} className="hover:bg-[#FFFFFF]">
+                        <td className="p-3.5 font-mono font-bold text-[#1B3E36]">{c.complaintNumber}</td>
+                        <td className="p-3.5 font-semibold text-[#1A2825]">{c.category}</td>
                         <td className="p-3.5 max-w-sm">
-                          <div className="font-semibold text-white truncate">{c.title}</div>
-                          <div className="text-[11px] text-slate-400 truncate">{c.address}</div>
+                          <div className="font-semibold text-[#1A2825] truncate">{c.title}</div>
+                          <div className="text-[11px] text-[#5C6E6A] truncate">{c.address}</div>
                         </td>
                         <td className="p-3.5">
-                          <span className="px-2 py-0.5 rounded bg-slate-800 uppercase font-bold text-[10px]">
+                          <span className="px-2 py-0.5 rounded bg-[#FAF9F5] border border-[#D4CEBF] uppercase font-bold text-[10px] text-[#1A2825]">
                             {c.status}
                           </span>
                         </td>
                         <td className="p-3.5">
-                          <span className="font-bold text-[10px] uppercase text-amber-400">
+                          <span className="font-bold text-[10px] uppercase text-[#B06D44] font-mono">
                             {c.priority}
                           </span>
                         </td>
-                        <td className="p-3.5 font-mono text-emerald-400">{c.anonymousPublicId}</td>
+                        <td className="p-3.5 font-mono font-bold text-[#2E6F5E]">{c.anonymousPublicId}</td>
                         <td className="p-3.5 text-right">
                           <button
                             onClick={() => setSelectedComplaint(c)}
-                            className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-xs rounded-xl"
+                            className="px-3 py-1.5 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl cursor-pointer shadow-xs"
                           >
                             Inspect & Assign
                           </button>
@@ -450,10 +436,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* TAB 3: ADMIN LIVE MAP */}
         {activeTab === 'map' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
             <div className="mb-4">
-              <h2 className="text-lg font-bold text-white">Administrative GIS City Map</h2>
-              <p className="text-xs text-slate-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                GEOGRAPHIC COMMAND
+              </div>
+              <h2 className="text-lg font-serif font-bold text-[#1A2825]">Administrative GIS City Map</h2>
+              <p className="text-xs text-[#5C6E6A]">
                 Click any issue marker to view details and execute immediate field crew assignment.
               </p>
             </div>
@@ -467,10 +456,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* TAB 4: RESOLUTION VERIFICATION */}
         {activeTab === 'verification' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
             <div className="mb-6">
-              <h2 className="text-lg font-bold text-white">Supervisory Resolution Verification</h2>
-              <p className="text-xs text-slate-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                COMPLETION AUDIT
+              </div>
+              <h2 className="text-lg font-serif font-bold text-[#1A2825]">Supervisory Resolution Verification</h2>
+              <p className="text-xs text-[#5C6E6A]">
                 Review completed field repairs and verified photos before granting permanent closure.
               </p>
             </div>
@@ -481,25 +473,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                 .map((comp) => (
                   <div
                     key={comp.id}
-                    className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                    className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs"
                   >
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-mono text-xs font-bold text-blue-400">
+                        <span className="font-mono text-xs font-bold text-[#1B3E36]">
                           {comp.complaintNumber}
                         </span>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 uppercase">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE] uppercase font-mono">
                           COMPLETED
                         </span>
                       </div>
-                      <h3 className="text-sm font-bold text-white">{comp.title}</h3>
-                      <p className="text-xs text-slate-400">{comp.address}</p>
+                      <h3 className="text-sm font-bold text-[#1A2825]">{comp.title}</h3>
+                      <p className="text-xs text-[#5C6E6A]">{comp.address}</p>
                     </div>
 
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedComplaint(comp)}
-                        className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold rounded-xl"
+                        className="px-4 py-2 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
                       >
                         Inspect Proof
                       </button>
@@ -507,7 +499,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                   </div>
                 ))}
               {complaintsList.filter((c) => c.status === 'COMPLETED').length === 0 && (
-                <div className="py-12 text-center text-slate-500 text-xs">
+                <div className="py-12 text-center text-[#5C6E6A] text-xs font-mono">
                   No completed jobs currently awaiting verification.
                 </div>
               )}
@@ -517,21 +509,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* TAB 5: RESPONSE CREWS */}
         {activeTab === 'crews' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-white mb-2">Municipal Field Response Crews</h2>
-            <p className="text-xs text-slate-400 mb-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+              FIELD UNITS
+            </div>
+            <h2 className="text-lg font-serif font-bold text-[#1A2825] mb-2">Municipal Field Response Crews</h2>
+            <p className="text-xs text-[#5C6E6A] mb-6">
               Assigned response units responsible for executing civil repairs and maintenance.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {crewsList.map((crew) => (
-                <div key={crew.id} className="bg-slate-950 border border-slate-800 p-5 rounded-2xl">
+                <div key={crew.id} className="bg-[#FFFFFF] border border-[#E5E1D5] p-5 rounded-2xl shadow-xs">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-mono font-bold text-slate-400">Crew #{crew.id}</span>
-                    <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span className="text-xs font-mono font-bold text-[#5C6E6A]">Crew #{crew.id}</span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#2E6F5E]"></span>
                   </div>
-                  <h3 className="text-sm font-bold text-white">{crew.crewName}</h3>
-                  <div className="text-xs text-slate-400 mt-1">Status: Active Service</div>
+                  <h3 className="text-sm font-bold text-[#1A2825]">{crew.crewName}</h3>
+                  <div className="text-xs text-[#5C6E6A] mt-1 font-mono">Status: Active Service</div>
                 </div>
               ))}
             </div>
@@ -540,9 +535,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* TAB 6: FRAUD REVIEW */}
         {activeTab === 'fraud' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-white mb-2">Spam & Fraud Review Queue</h2>
-            <p className="text-xs text-slate-400 mb-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+              RISK HEURISTICS
+            </div>
+            <h2 className="text-lg font-serif font-bold text-[#1A2825] mb-2">Spam & Fraud Review Queue</h2>
+            <p className="text-xs text-[#5C6E6A] mb-6">
               Heuristic and AI flagged submissions requiring human verification.
             </p>
 
@@ -550,22 +548,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               {fraudList.map((flag) => (
                 <div
                   key={flag.id}
-                  className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between"
+                  className="bg-[#FFFFFF] border border-[#E5E1D5] p-4 rounded-2xl flex items-center justify-between shadow-xs"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20 uppercase">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-[#FFF1E6] text-[#8A3B2A] border border-[#F4C49E] uppercase font-mono">
                         Risk: {flag.riskLevel}
                       </span>
-                      <span className="text-xs text-slate-400">Confidence: {Math.round(flag.confidence * 100)}%</span>
+                      <span className="text-xs text-[#5C6E6A]">Confidence: {Math.round(flag.confidence * 100)}%</span>
                     </div>
-                    <div className="text-xs font-semibold text-white">{flag.detectedType}</div>
+                    <div className="text-xs font-bold text-[#1A2825]">{flag.detectedType}</div>
                   </div>
-                  <div className="text-xs text-slate-400">{flag.reviewStatus}</div>
+                  <div className="text-xs text-[#5C6E6A] font-mono">{flag.reviewStatus}</div>
                 </div>
               ))}
               {fraudList.length === 0 && (
-                <div className="py-12 text-center text-slate-500 text-xs">
+                <div className="py-12 text-center text-[#5C6E6A] text-xs font-mono">
                   Zero active fraud or spam flags detected.
                 </div>
               )}
@@ -575,9 +573,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* TAB 7: DUPLICATES */}
         {activeTab === 'duplicates' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-white mb-2">Proximity Duplicate Reports</h2>
-            <p className="text-xs text-slate-400 mb-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+              GEO-SPATIAL CLUSTERING
+            </div>
+            <h2 className="text-lg font-serif font-bold text-[#1A2825] mb-2">Proximity Duplicate Reports</h2>
+            <p className="text-xs text-[#5C6E6A] mb-6">
               Reports automatically flagged for high spatial and category proximity.
             </p>
 
@@ -585,17 +586,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               {duplicateList.map((dup) => (
                 <div
                   key={dup.id}
-                  className="bg-slate-950 border border-slate-800 p-4 rounded-2xl flex items-center justify-between text-xs"
+                  className="bg-[#FFFFFF] border border-[#E5E1D5] p-4 rounded-2xl flex items-center justify-between text-xs shadow-xs"
                 >
                   <div>
-                    <span className="text-white font-semibold">Complaint #{dup.complaintId}</span>
-                    <span className="text-slate-400 ml-2">Potential Duplicate of #{dup.possibleDuplicateId}</span>
+                    <span className="text-[#1A2825] font-bold font-mono">Complaint #{dup.complaintId}</span>
+                    <span className="text-[#5C6E6A] ml-2">Potential Duplicate of #{dup.possibleDuplicateId}</span>
                   </div>
-                  <div className="text-amber-400 font-bold">{Math.round(dup.similarityScore * 100)}% Match</div>
+                  <div className="text-[#B06D44] font-bold font-mono">{Math.round(dup.similarityScore * 100)}% Match</div>
                 </div>
               ))}
               {duplicateList.length === 0 && (
-                <div className="py-12 text-center text-slate-500 text-xs">
+                <div className="py-12 text-center text-[#5C6E6A] text-xs font-mono">
                   No pending duplicate records to review.
                 </div>
               )}
@@ -603,21 +604,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           </div>
         )}
 
-        {/* TAB 8: ADMINISTRATOR MANAGEMENT (Section 7) */}
+        {/* TAB 8: ADMINISTRATOR MANAGEMENT */}
         {activeTab === 'administrators' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="flex items-center justify-between pb-4 border-b border-[#E5E1D5]">
               <div>
-                <h2 className="text-lg font-bold text-white">Administrator Management</h2>
-                <p className="text-xs text-slate-400">
-                  Manage the authorized municipal administrator email accounts. Server-side verified.
+                <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                  ACCESS CONTROL
+                </div>
+                <h2 className="text-lg font-serif font-bold text-[#1A2825]">Administrator Management</h2>
+                <p className="text-xs text-[#5C6E6A]">
+                  Manage authorized municipal administrator email accounts. Server-side verified.
                 </p>
               </div>
             </div>
 
             {/* Add Administrator Form */}
-            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">
+            <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 shadow-xs">
+              <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
                 Authorize New Administrator Email
               </label>
               <div className="flex gap-2 max-w-md">
@@ -626,12 +630,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                   placeholder="new.admin@municipality.gov"
                   value={newAdminEmail}
                   onChange={(e) => setNewAdminEmail(e.target.value)}
-                  className="flex-1 bg-slate-900 border border-slate-800 focus:border-amber-500 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
+                  className="flex-1 bg-[#FAF9F5] border border-[#D4CEBF] focus:border-[#1B3E36] rounded-xl px-3.5 py-2 text-xs text-[#1A2825] outline-none"
                 />
                 <button
                   type="button"
                   onClick={handleAddAdmin}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer"
+                  className="px-4 py-2 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] text-xs font-bold uppercase tracking-wider rounded-xl flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
                 >
                   <Plus className="w-4 h-4" />
                   <span>Authorize</span>
@@ -639,7 +643,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               </div>
 
               {adminOpError && (
-                <div className="mt-3 text-red-400 text-xs flex items-center gap-1.5">
+                <div className="mt-3 text-[#8A3B2A] bg-[#FFF1E6] border border-[#F4C49E] p-2 rounded-lg text-xs flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4" />
                   <span>{adminOpError}</span>
                 </div>
@@ -648,25 +652,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
             {/* Administrator Emails List */}
             <div className="space-y-2">
-              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#5C6E6A] font-mono mb-2">
                 Currently Authorized Administrators ({adminsList.length})
               </div>
               {adminsList.map((adm) => (
                 <div
                   key={adm.id || adm.email}
-                  className="bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 flex items-center justify-between"
+                  className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-xl px-4 py-3 flex items-center justify-between shadow-xs"
                 >
                   <div className="flex items-center gap-2.5">
-                    <Lock className="w-4 h-4 text-emerald-400" />
-                    <span className="text-xs font-medium text-white">{adm.email}</span>
-                    <span className="text-[10px] text-slate-500">Added by: {adm.addedBy}</span>
+                    <Lock className="w-4 h-4 text-[#1B3E36]" />
+                    <span className="text-xs font-bold text-[#1A2825]">{adm.email}</span>
+                    <span className="text-[10px] text-[#5C6E6A] font-mono">Added by: {adm.addedBy}</span>
                   </div>
 
                   {adminsList.length > 1 && (
                     <button
                       type="button"
                       onClick={() => handleRemoveAdmin(adm.email)}
-                      className="text-slate-500 hover:text-red-400 p-1.5 transition-colors"
+                      className="text-[#8A9894] hover:text-[#B06D44] p-1.5 transition-colors cursor-pointer"
                       title="Revoke Admin Access"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -678,11 +682,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
           </div>
         )}
 
-        {/* TAB 9: AUDIT LOGS (Section 41) */}
+        {/* TAB 9: AUDIT LOGS */}
         {activeTab === 'audit' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6">
-            <h2 className="text-lg font-bold text-white mb-2">Protected Municipal Audit Trail</h2>
-            <p className="text-xs text-slate-400 mb-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 shadow-xs">
+            <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+              RECORD OF RECORD
+            </div>
+            <h2 className="text-lg font-serif font-bold text-[#1A2825] mb-2">Protected Municipal Audit Trail</h2>
+            <p className="text-xs text-[#5C6E6A] mb-6">
               Immutable server-side logs recording administrative assignments, verifications, and permissions.
             </p>
 
@@ -690,72 +697,75 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               {auditLogsList.map((log) => (
                 <div
                   key={log.id}
-                  className="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between"
+                  className="bg-[#FFFFFF] border border-[#E5E1D5] p-3 rounded-xl flex items-center justify-between shadow-xs"
                 >
                   <div>
-                    <span className="text-blue-400 font-bold">[{log.action}]</span>
-                    <span className="text-slate-300 ml-2">{log.entityType} ({log.entityId})</span>
-                    <span className="text-slate-500 ml-2">by {log.actorId}</span>
+                    <span className="text-[#1B3E36] font-bold">[{log.action}]</span>
+                    <span className="text-[#1A2825] ml-2 font-semibold">{log.entityType} ({log.entityId})</span>
+                    <span className="text-[#5C6E6A] ml-2">by {log.actorId}</span>
                   </div>
-                  <span className="text-[10px] text-slate-500">
+                  <span className="text-[10px] text-[#8A9894]">
                     {new Date(log.createdAt).toLocaleString()}
                   </span>
                 </div>
               ))}
               {auditLogsList.length === 0 && (
-                <div className="py-12 text-center text-slate-500 text-xs">No audit logs recorded yet.</div>
+                <div className="py-12 text-center text-[#5C6E6A] text-xs">No audit logs recorded yet.</div>
               )}
             </div>
           </div>
         )}
 
-        {/* TAB 10: SYSTEM HEALTH (Section 42) */}
+        {/* TAB 10: SYSTEM HEALTH */}
         {activeTab === 'health' && (
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-6 sm:p-8 space-y-6 shadow-xs">
             <div>
-              <h2 className="text-lg font-bold text-white">System Infrastructure Health</h2>
-              <p className="text-xs text-slate-400">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-1">
+                TELEMETRY & STATUS
+              </div>
+              <h2 className="text-lg font-serif font-bold text-[#1A2825]">System Infrastructure Health</h2>
+              <p className="text-xs text-[#5C6E6A]">
                 Live connection monitoring for database, authentication, maps, and AI vision services.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">Relational Database (Cloud SQL)</div>
-                  <div className="text-base font-bold text-white">PostgreSQL Connection Pool</div>
+                  <div className="text-xs text-[#5C6E6A] font-medium font-mono uppercase">Relational Database</div>
+                  <div className="text-base font-serif font-bold text-[#1A2825]">PostgreSQL / Supabase</div>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE]">
                   {healthStatus?.database || 'CONNECTED'}
                 </span>
               </div>
 
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">Authentication Authority</div>
-                  <div className="text-base font-bold text-white">Firebase & Google OAuth</div>
+                  <div className="text-xs text-[#5C6E6A] font-medium font-mono uppercase">Authentication Authority</div>
+                  <div className="text-base font-serif font-bold text-[#1A2825]">Firebase & Google OAuth</div>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE]">
                   {healthStatus?.authentication || 'CONNECTED'}
                 </span>
               </div>
 
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">GIS & Map Engine</div>
-                  <div className="text-base font-bold text-white">MapLibre GL & Vector Tiles</div>
+                  <div className="text-xs text-[#5C6E6A] font-medium font-mono uppercase">GIS & Map Engine</div>
+                  <div className="text-base font-serif font-bold text-[#1A2825]">MapLibre GL & Vector Tiles</div>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#E6F2ED] text-[#1B4D3E] border border-[#A8CEBE]">
                   {healthStatus?.maps || 'CONFIGURED'}
                 </span>
               </div>
 
-              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 flex items-center justify-between">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] rounded-2xl p-5 flex items-center justify-between shadow-xs">
                 <div>
-                  <div className="text-xs text-slate-400 font-medium">Civic AI Computer Vision</div>
-                  <div className="text-base font-bold text-white">Gemini 2.5 Flash</div>
+                  <div className="text-xs text-[#5C6E6A] font-medium font-mono uppercase">Civic AI Computer Vision</div>
+                  <div className="text-base font-serif font-bold text-[#1A2825]">Gemini AI Vision</div>
                 </div>
-                <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                <span className="px-3 py-1 rounded-full text-xs font-bold font-mono bg-[#1B3E36]/10 text-[#1B3E36] border border-[#1B3E36]/20">
                   {healthStatus?.ai || 'CONFIGURED'}
                 </span>
               </div>
@@ -765,35 +775,35 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
         {/* Action / Inspect Modal */}
         {selectedComplaint && (
-          <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6">
-              <div className="flex items-start justify-between pb-4 border-b border-slate-800">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+            <div className="bg-[#FAF9F5] border border-[#D4CEBF] rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto space-y-6 shadow-2xl">
+              <div className="flex items-start justify-between pb-4 border-b border-[#E5E1D5]">
                 <div>
-                  <span className="font-mono text-xs font-bold text-blue-400">
+                  <span className="font-mono text-xs font-bold text-[#1B3E36]">
                     {selectedComplaint.complaintNumber}
                   </span>
-                  <h3 className="text-xl font-bold text-white mt-0.5">{selectedComplaint.title}</h3>
+                  <h3 className="text-xl font-serif font-bold text-[#1A2825] mt-0.5">{selectedComplaint.title}</h3>
                 </div>
                 <button
                   onClick={() => setSelectedComplaint(null)}
-                  className="text-slate-500 hover:text-white"
+                  className="text-[#5C6E6A] hover:text-[#1A2825] p-1 cursor-pointer"
                 >
                   ✕
                 </button>
               </div>
 
-              <div className="text-xs text-slate-300 bg-slate-950 p-4 rounded-xl border border-slate-800 leading-relaxed">
+              <div className="text-xs text-[#1A2825] bg-[#FFFFFF] p-4 rounded-xl border border-[#E5E1D5] leading-relaxed shadow-xs">
                 {selectedComplaint.description}
               </div>
 
               {selectedComplaint.media && selectedComplaint.media.length > 0 && (
                 <div>
-                  <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
+                  <div className="text-xs font-bold uppercase tracking-wider text-[#B06D44] font-mono mb-2">
                     Evidence Photos
                   </div>
                   <div className="flex gap-3 overflow-x-auto">
                     {selectedComplaint.media.map((m: any, i: number) => (
-                      <div key={i} className="w-36 h-28 rounded-xl overflow-hidden border border-slate-800 shrink-0">
+                      <div key={i} className="w-36 h-28 rounded-xl overflow-hidden border border-[#D4CEBF] shrink-0 shadow-xs">
                         <img src={m.fileUrl} alt="Evidence" className="w-full h-full object-cover" />
                       </div>
                     ))}
@@ -802,8 +812,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               )}
 
               {/* Action 1: Verify or Reject */}
-              <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] p-4 rounded-2xl space-y-3 shadow-xs">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#1A2825] font-mono">
                   Report Verification
                 </div>
                 <input
@@ -811,18 +821,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                   placeholder="Verification note / reason for decision..."
                   value={actionReason}
                   onChange={(e) => setActionReason(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white outline-none"
+                  className="w-full bg-[#FAF9F5] border border-[#D4CEBF] focus:border-[#1B3E36] rounded-xl px-3.5 py-2 text-xs text-[#1A2825] outline-none"
                 />
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleVerifyComplaint(selectedComplaint.id, 'VERIFY')}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold rounded-xl"
+                    className="px-4 py-2 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer shadow-xs"
                   >
                     Verify Report
                   </button>
                   <button
                     onClick={() => handleVerifyComplaint(selectedComplaint.id, 'REJECT')}
-                    className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 text-xs font-bold rounded-xl"
+                    className="px-4 py-2 bg-[#FFF1E6] hover:bg-[#ffe6d6] border border-[#F4C49E] text-[#8A3B2A] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
                   >
                     Reject Invalid Report
                   </button>
@@ -830,15 +840,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               </div>
 
               {/* Action 2: Crew Assignment */}
-              <div className="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-3">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400">
+              <div className="bg-[#FFFFFF] border border-[#E5E1D5] p-4 rounded-2xl space-y-3 shadow-xs">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#1A2825] font-mono">
                   Dispatch Field Crew
                 </div>
                 <div className="flex gap-2">
                   <select
                     value={assignCrewId}
                     onChange={(e) => setAssignCrewId(e.target.value)}
-                    className="flex-1 bg-slate-900 border border-slate-800 text-xs text-white rounded-xl px-3 py-2 outline-none"
+                    className="flex-1 bg-[#FAF9F5] border border-[#D4CEBF] text-xs text-[#1A2825] rounded-xl px-3 py-2 outline-none font-mono"
                   >
                     <option value="">Select Response Crew...</option>
                     {crewsList.map((cr) => (
@@ -850,7 +860,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
                   <button
                     onClick={() => handleAssignCrew(selectedComplaint.id)}
                     disabled={!assignCrewId}
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl disabled:opacity-40"
+                    className="px-4 py-2 bg-[#E5A952] hover:bg-[#d99d45] text-[#102621] text-xs font-bold uppercase tracking-wider rounded-xl disabled:opacity-40 cursor-pointer shadow-xs"
                   >
                     Dispatch Crew
                   </button>
@@ -860,7 +870,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
               <div className="flex justify-end">
                 <button
                   onClick={() => setSelectedComplaint(null)}
-                  className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-xl"
+                  className="px-5 py-2 bg-[#FAF9F5] hover:bg-[#F2EFE7] border border-[#D4CEBF] text-[#1A2825] text-xs font-bold uppercase tracking-wider rounded-xl cursor-pointer"
                 >
                   Close
                 </button>
