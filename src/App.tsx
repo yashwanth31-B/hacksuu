@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { GPSProvider } from './context/GPSContext.tsx';
+import { ToastProvider } from './context/ToastContext.tsx';
 import { Navbar } from './components/Navbar.tsx';
 import { AuthModal } from './components/AuthModal.tsx';
 import { FirstTimeAdminSetup } from './components/FirstTimeAdminSetup.tsx';
@@ -86,7 +87,9 @@ export default function App() {
   return (
     <AuthProvider>
       <GPSProvider>
-        <AppContent />
+        <ToastProvider>
+          <AppContent />
+        </ToastProvider>
       </GPSProvider>
     </AuthProvider>
   );

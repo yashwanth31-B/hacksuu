@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CivicMap, MapComplaint } from '../components/CivicMap.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
+import { useToast } from '../context/ToastContext.tsx';
 import { getApiUrl } from '../lib/api.ts';
 import {
   Filter,
@@ -17,6 +18,8 @@ import {
   LocateFixed,
   Compass,
   EyeOff,
+  ThumbsUp,
+  Flame,
 } from 'lucide-react';
 
 interface PublicMapProps {
@@ -153,6 +156,53 @@ export const PublicMap: React.FC<PublicMapProps> = ({ navigate }) => {
   const [showFiltersPanel, setShowFiltersPanel] = useState(false);
   const [mapCenter, setMapCenter] = useState<[number, number] | undefined>(undefined);
   const [locatingUser, setLocatingUser] = useState(false);
+  const [upvoting, setUpvoting] = useState(false);
+  const { showToast } = useToast();
+
+  const handleUpvote = async (complaint: MapComplaint) => {
+    if (upvoting) return;
+    setUpvoting(true);
+    try {
+      const res = await fetch(getApiUrl(`/api/complaints/${complaint.id}/upvote`), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        showToast({
+          title: data.escalated ? 'Community Priority Escalated!' : 'Impacts Me Too Recorded',
+          message: data.message,
+          type: data.escalated ? 'warning' : 'success',
+        });
+        setAllComplaints((prev) =>
+          prev.map((c) =>
+            c.id === complaint.id
+              ? { ...c, upvotes: data.upvotes, priority: data.priority }
+              : c
+          )
+        );
+        if (selectedComplaint && selectedComplaint.id === complaint.id) {
+          setSelectedComplaint((prev) =>
+            prev ? { ...prev, upvotes: data.upvotes, priority: data.priority } : null
+          );
+        }
+      } else {
+        showToast({
+          title: 'Notice',
+          message: data.error || 'Failed to record upvote.',
+          type: 'error',
+        });
+      }
+    } catch (err) {
+      showToast({
+        title: 'Network Delay',
+        message: 'Could not reach server to register upvote.',
+        type: 'error',
+      });
+    } finally {
+      setUpvoting(false);
+    }
+  };
 
   const handleLocateMe = async () => {
     if (gpsLocation) {
@@ -934,6 +984,31 @@ export const PublicMap: React.FC<PublicMapProps> = ({ navigate }) => {
                 {selectedComplaint.description}
               </p>
             )}
+
+            {/* Community Upvote & Priority Escalation Callout */}
+            <div className="mb-3 space-y-2">
+              {(selectedComplaint.upvotes || 0) >= 10 && (
+                <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[#FFF7ED] border border-[#FDBA74] text-[#9A3412] text-[11px] font-bold">
+                  <Flame className="w-3.5 h-3.5 text-[#EA580C] shrink-0" />
+                  <span>High Community Priority: {selectedComplaint.upvotes} verified residents impacted</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => handleUpvote(selectedComplaint)}
+                disabled={upvoting}
+                className="w-full py-2 px-3 rounded-xl border border-[#1B3E36] bg-[#1B3E36]/5 hover:bg-[#1B3E36]/15 text-[#1B3E36] text-xs font-bold flex items-center justify-between transition-colors cursor-pointer disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2">
+                  <ThumbsUp className="w-3.5 h-3.5 text-[#1B3E36]" />
+                  <span>Impacts Me Too (+1)</span>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#1B3E36] text-[#FAF9F5] font-mono text-[11px]">
+                  {selectedComplaint.upvotes || 0}
+                </span>
+              </button>
+            </div>
 
             <button
               type="button"

@@ -7,6 +7,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Award,
+  Download,
 } from 'lucide-react';
 
 interface TransparencyDashboardProps {
@@ -42,17 +43,28 @@ export const TransparencyDashboard: React.FC<TransparencyDashboardProps> = () =>
     <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-10">
         {/* Title */}
-        <div className="text-center max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1B3E36]/10 text-[#1B3E36] border border-[#1B3E36]/20 text-xs font-bold uppercase tracking-wider mb-3 font-mono">
+        <div className="text-center max-w-3xl mx-auto space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#1B3E36]/10 text-[#1B3E36] border border-[#1B3E36]/20 text-xs font-bold uppercase tracking-wider font-mono">
             <BarChart3 className="w-3.5 h-3.5 text-[#E5A952]" />
             <span>OPEN CIVIC GOVERNANCE</span>
           </div>
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1A2825] mb-3">
+          <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#1A2825]">
             Public Transparency Dashboard
           </h1>
           <p className="text-[#5C6E6A] text-sm leading-relaxed max-w-2xl mx-auto">
             Real-time public audit of municipal responsiveness, field resolution metrics, and department accountability across all zones.
           </p>
+
+          <div className="pt-1 flex justify-center">
+            <a
+              href={getApiUrl('/api/public/export-csv')}
+              download="civicfix_transparency_data.csv"
+              className="px-4 py-2 rounded-xl bg-[#FFFFFF] hover:bg-[#FAF9F5] border border-[#D4CEBF] text-[#1B3E36] text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <Download className="w-4 h-4 text-[#E5A952]" />
+              <span>Download Open Civic Data (.CSV)</span>
+            </a>
+          </div>
         </div>
 
         {/* Primary Metric KPI Cards */}

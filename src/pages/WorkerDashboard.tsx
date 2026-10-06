@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
+import { useToast } from '../context/ToastContext.tsx';
 import { getApiUrl } from '../lib/api.ts';
 import {
   Wrench,
@@ -10,6 +11,9 @@ import {
   MapPin,
   Camera,
   Award,
+  Sparkles,
+  ShieldCheck,
+  Loader2,
 } from 'lucide-react';
 
 interface WorkerDashboardProps {
@@ -18,6 +22,7 @@ interface WorkerDashboardProps {
 
 export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) => {
   const { user, profile, getAuthToken, loginAsPersona, openAuthModal } = useAuth();
+  const { showToast } = useToast();
   const { location: gpsLocation, calculateDistance, formatDistance } = useGPS();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -138,8 +143,54 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = () => setCompletionPhoto(reader.result as string);
+    reader.onload = () => {
+      setCompletionPhoto(reader.result as string);
+      setAiAuditResult(null); // Reset prior audit for new photo
+    };
     reader.readAsDataURL(file);
+  };
+
+  const handleRunAiAudit = async () => {
+    if (!activeTask || !completionPhoto || auditingAi) return;
+    setAuditingAi(true);
+    try {
+      const token = await getAuthToken();
+      const beforeImg = activeTask.media && activeTask.media.length > 0 ? activeTask.media[0].fileUrl : null;
+      const res = await fetch(getApiUrl(`/api/worker/tasks/${activeTask.id}/audit-resolution`), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          beforeImageBase64: beforeImg,
+          afterImageBase64: completionPhoto,
+          category: activeTask.category,
+        }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAiAuditResult(data.audit);
+        showToast({
+          title: 'AI Visual Audit Passed',
+          message: `${Math.round(data.audit.confidence * 100)}% Confidence: ${data.audit.recommendation}`,
+          type: 'success',
+        });
+        if (!completionNotes.trim()) {
+          setCompletionNotes(data.audit.analysis);
+        }
+      } else {
+        showToast({
+          title: 'AI Audit Notice',
+          message: data.error || 'AI visual audit evaluation unavailable.',
+          type: 'error',
+        });
+      }
+    } catch {
+      showToast({ title: 'Network Error', message: 'Failed to connect to AI audit service.', type: 'error' });
+    } finally {
+      setAuditingAi(false);
+    }
   };
 
   const isAuthorizedWorker =
@@ -473,8 +524,62 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                   </label>
 
                   {completionPhoto && (
-                    <div className="mt-3 w-28 h-20 rounded-xl overflow-hidden border border-[#D4CEBF] shadow-xs">
-                      <img src={completionPhoto} alt="Resolution" className="w-full h-full object-cover" />
+                    <div className="mt-3 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="w-28 h-20 rounded-xl overflow-hidden border border-[#D4CEBF] shadow-xs">
+                          <img src={completionPhoto} alt="Resolution" className="w-full h-full object-cover" />
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={handleRunAiAudit}
+                          disabled={auditingAi}
+                          className="px-4 py-2.5 rounded-xl bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold flex items-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-50"
+                        >
+                          {auditingAi ? (
+                            <>
+                              <Loader2 className="w-4 h-4 animate-spin text-[#E5A952]" />
+                              <span>Auditing Evidence...</span>
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 text-[#E5A952]" />
+                              <span>Run AI Visual Audit</span>
+                            </>
+                          )}
+                        </button>
+                      </div>
+
+                      {/* AI Audit Feedback Card */}
+                      {aiAuditResult && (
+                        <div className="p-3.5 rounded-2xl bg-[#E6F2ED] border border-[#A8CEBE] text-xs text-[#1B4D3E] space-y-2 animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between">
+                            <span className="font-bold flex items-center gap-1.5 font-mono">
+                              <ShieldCheck className="w-4 h-4 text-[#1B4D3E]" />
+                              <span>Audit Match: {Math.round(aiAuditResult.confidence * 100)}%</span>
+                            </span>
+                            <span className="px-2 py-0.5 rounded-full bg-[#1B4D3E] text-[#FAF9F5] text-[10px] font-mono font-bold">
+                              {aiAuditResult.recommendation}
+                            </span>
+                          </div>
+                          <p className="text-[11px] text-[#2C4D46] leading-relaxed">
+                            {aiAuditResult.analysis}
+                          </p>
+                          {aiAuditResult.detectedImprovements && aiAuditResult.detectedImprovements.length > 0 && (
+                            <div className="pt-2 border-t border-[#A8CEBE]/50 space-y-1">
+                              <div className="text-[10px] uppercase font-bold text-[#1B4D3E] font-mono">
+                                Detected Improvements:
+                              </div>
+                              {aiAuditResult.detectedImprovements.map((imp: string, i: number) => (
+                                <div key={i} className="text-[11px] flex items-center gap-1.5 text-[#2C4D46]">
+                                  <span>✓</span>
+                                  <span>{imp}</span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

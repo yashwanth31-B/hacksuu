@@ -24,6 +24,7 @@ export interface MapComplaint {
   status: string;
   priority?: string;
   address?: string;
+  upvotes?: number;
 }
 
 interface CivicMapProps {

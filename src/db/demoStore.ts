@@ -24,9 +24,16 @@ export interface DemoComplaint {
   duplicateGroupId?: string | null;
   createdAt: string;
   updatedAt: string;
-  resolvedAt?: string | null;
   media?: any[];
   history?: any[];
+  upvotes?: number;
+  upvotedUids?: string[];
+  citizenRating?: number | null;
+  citizenFeedback?: string | null;
+  reopenCount?: number;
+  resolutionConfidence?: number | null;
+  resolutionAiAnalysis?: string | null;
+  resolutionVerified?: boolean | null;
 }
 
 const now = new Date();
@@ -60,6 +67,7 @@ const initialComplaints: DemoComplaint[] = [
     createdAt: hoursAgo(6),
     updatedAt: hoursAgo(2),
     resolvedAt: null,
+    upvotes: 24,
     media: [],
   },
   {
@@ -87,6 +95,7 @@ const initialComplaints: DemoComplaint[] = [
     createdAt: hoursAgo(8),
     updatedAt: hoursAgo(3),
     resolvedAt: null,
+    upvotes: 14,
     media: [],
   },
   {
@@ -303,7 +312,16 @@ const initialComplaints: DemoComplaint[] = [
     createdAt: daysAgo(5),
     updatedAt: daysAgo(1),
     resolvedAt: daysAgo(1),
-    media: [],
+    upvotes: 18,
+    citizenRating: 5,
+    citizenFeedback: 'Road completely restored and smoothened, thank you field crew!',
+    resolutionConfidence: 0.97,
+    resolutionVerified: true,
+    resolutionAiAnalysis: 'AI Visual Audit confirmed pothole filled flush with hot-mix asphalt grade. Surface leveled and road hazards eliminated.',
+    media: [
+      { id: 101, fileUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=800', fileType: 'image/jpeg', stage: 'SUBMISSION' },
+      { id: 102, fileUrl: 'https://images.unsplash.com/photo-1584463699042-498c48a7fa9e?w=800', fileType: 'image/jpeg', stage: 'COMPLETION' }
+    ],
   },
   {
     id: 11,
@@ -421,6 +439,129 @@ export const getDemoStats = () => {
     avgResolutionHours: 18.4,
     slaComplianceRate: 94.2,
   };
+};
+
+export const upvoteDemoComplaint = (idOrNumber: number | string, uid?: string) => {
+  const comp = typeof idOrNumber === 'number'
+    ? demoStore.find(c => c.id === idOrNumber)
+    : demoStore.find(c => c.complaintNumber.toUpperCase() === String(idOrNumber).toUpperCase() || c.id === Number(idOrNumber));
+
+  if (!comp) return null;
+
+  if (!comp.upvotedUids) comp.upvotedUids = [];
+  const alreadyUpvoted = uid && comp.upvotedUids.includes(uid);
+  if (!alreadyUpvoted) {
+    comp.upvotes = (comp.upvotes || 0) + 1;
+    if (uid) comp.upvotedUids.push(uid);
+  }
+
+  const prevPriority = comp.priority;
+  if ((comp.upvotes || 0) >= 20) {
+    comp.priority = 'URGENT';
+  } else if ((comp.upvotes || 0) >= 10 && comp.priority !== 'URGENT') {
+    comp.priority = 'HIGH';
+  } else if ((comp.upvotes || 0) >= 5 && (comp.priority === 'LOW' || !comp.priority)) {
+    comp.priority = 'MEDIUM';
+  }
+
+  const escalated = prevPriority !== comp.priority;
+
+  if (!comp.history) comp.history = [];
+  comp.history.push({
+    id: comp.history.length + 1,
+    complaintId: comp.id,
+    previousStatus: comp.status,
+    newStatus: comp.status,
+    changedBy: uid ? `Resident (${uid.slice(0, 10)})` : 'Concerned Resident',
+    reason: escalated
+      ? `Citizen upvoted issue ("Impacts Me Too" count: ${comp.upvotes}). Community priority escalated to ${comp.priority}.`
+      : `Citizen upvoted issue ("Impacts Me Too" count: ${comp.upvotes}).`,
+    createdAt: new Date().toISOString(),
+  });
+
+  comp.updatedAt = new Date().toISOString();
+
+  return {
+    complaint: comp,
+    newUpvotes: comp.upvotes || 1,
+    newPriority: comp.priority,
+    escalated,
+  };
+};
+
+export const addDemoFeedback = (
+  idOrNumber: number | string,
+  data: { rating: number; feedback?: string; reopen?: boolean; reason?: string }
+) => {
+  const comp = typeof idOrNumber === 'number'
+    ? demoStore.find(c => c.id === idOrNumber)
+    : demoStore.find(c => c.complaintNumber.toUpperCase() === String(idOrNumber).toUpperCase() || c.id === Number(idOrNumber));
+
+  if (!comp) return null;
+  if (!comp.history) comp.history = [];
+
+  if (data.reopen) {
+    const prevStatus = comp.status;
+    comp.status = 'IN_PROGRESS';
+    comp.reopenCount = (comp.reopenCount || 0) + 1;
+    comp.resolvedAt = null;
+    comp.updatedAt = new Date().toISOString();
+
+    comp.history.push({
+      id: comp.history.length + 1,
+      complaintId: comp.id,
+      previousStatus: prevStatus,
+      newStatus: 'IN_PROGRESS',
+      changedBy: 'Verified Citizen',
+      reason: `Case reopened within 48-hr gate: ${data.reason || 'Resident unsatisfied with repair quality'}`,
+      createdAt: new Date().toISOString(),
+    });
+  } else {
+    comp.citizenRating = data.rating;
+    if (data.feedback) comp.citizenFeedback = data.feedback;
+    comp.updatedAt = new Date().toISOString();
+
+    comp.history.push({
+      id: comp.history.length + 1,
+      complaintId: comp.id,
+      previousStatus: comp.status,
+      newStatus: comp.status,
+      changedBy: 'Verified Citizen',
+      reason: `Citizen rated resolution ${data.rating}/5 stars. Feedback: "${data.feedback || 'Resolution acknowledged'}"`,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  return comp;
+};
+
+export const updateDemoResolutionAi = (
+  idOrNumber: number | string,
+  data: { confidence: number; analysis: string; verified: boolean; recommendation?: string }
+) => {
+  const comp = typeof idOrNumber === 'number'
+    ? demoStore.find(c => c.id === idOrNumber)
+    : demoStore.find(c => c.complaintNumber.toUpperCase() === String(idOrNumber).toUpperCase() || c.id === Number(idOrNumber));
+
+  if (!comp) return null;
+
+  comp.resolutionConfidence = data.confidence;
+  comp.resolutionAiAnalysis = data.analysis;
+  comp.resolutionVerified = data.verified;
+  comp.updatedAt = new Date().toISOString();
+
+  if (!comp.history) comp.history = [];
+  comp.history.push({
+    id: comp.history.length + 1,
+    complaintId: comp.id,
+    previousStatus: comp.status,
+    newStatus: comp.status,
+    changedBy: 'Gemini AI Vision Auditor',
+    reason: `AI Visual Inspection: ${data.verified ? 'VERIFIED' : 'FLAGGED'} (${Math.round(data.confidence * 100)}% match confidence). Analysis: ${data.analysis}`,
+    createdAt: new Date().toISOString(),
+  });
+
+  return comp;
 };
 
 export interface DemoUser {

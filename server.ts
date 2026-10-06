@@ -33,13 +33,16 @@ import {
 } from './src/middleware/auth.ts';
 import cors from 'cors';
 import { getOrCreateProfile, isAuthorizedAdmin } from './src/db/users.ts';
-import { analyzeCivicImage } from './src/lib/ai.ts';
+import { analyzeCivicImage, auditResolutionImages } from './src/lib/ai.ts';
 import { signJwt, hashPassword, verifyPassword } from './src/lib/jwt.ts';
 import {
   getDemoComplaints,
   getDemoComplaintByNumber,
   addDemoComplaint,
   getDemoStats,
+  upvoteDemoComplaint,
+  addDemoFeedback,
+  updateDemoResolutionAi,
   findDemoUserByEmail,
   findDemoUserByUid,
   addDemoUser,
@@ -904,10 +907,75 @@ app.get('/api/public/complaints/:complaintNumber', async (req: Request, res: Res
       ward: 'Ward 114 - Kukatpally Central',
       media: demoComp.media || [],
       history: demoComp.history || [],
+      upvotes: demoComp.upvotes || 0,
+      citizenRating: demoComp.citizenRating || null,
+      citizenFeedback: demoComp.citizenFeedback || null,
+      reopenCount: demoComp.reopenCount || 0,
+      resolutionConfidence: demoComp.resolutionConfidence || null,
+      resolutionAiAnalysis: demoComp.resolutionAiAnalysis || null,
+      resolutionVerified: demoComp.resolutionVerified || null,
     });
   }
 
   res.status(404).json({ error: 'Complaint not found with ID ' + num });
+});
+
+// Upvote Civic Complaint ("Impacts Me Too" - Community Priority Escalation)
+app.post('/api/complaints/:id/upvote', optionalAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const uid = req.user?.uid || (req.body?.uid as string | undefined);
+
+    const result = upvoteDemoComplaint(isNaN(Number(rawId)) ? rawId : Number(rawId), uid);
+    if (!result) {
+      return res.status(404).json({ error: 'Complaint not found to upvote.' });
+    }
+
+    return res.json({
+      success: true,
+      message: result.escalated
+        ? `Upvoted! Community threshold met: Priority escalated to ${result.newPriority}!`
+        : 'Upvote recorded! Your voice strengthens community resolution priority.',
+      complaintId: result.complaint.id,
+      complaintNumber: result.complaint.complaintNumber,
+      upvotes: result.newUpvotes,
+      priority: result.newPriority,
+      escalated: result.escalated,
+    });
+  } catch (err: any) {
+    console.error('Upvote error:', err);
+    res.status(500).json({ error: 'Failed to record upvote' });
+  }
+});
+
+// Citizen Resolution Rating & 48-Hour Reopen Gate
+app.post('/api/complaints/:id/feedback', optionalAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const { rating, feedback, reopen, reason } = req.body;
+
+    const comp = addDemoFeedback(isNaN(Number(rawId)) ? rawId : Number(rawId), {
+      rating: Number(rating) || 5,
+      feedback: feedback ? String(feedback).trim() : undefined,
+      reopen: Boolean(reopen),
+      reason: reason ? String(reason).trim() : undefined,
+    });
+
+    if (!comp) {
+      return res.status(404).json({ error: 'Complaint not found.' });
+    }
+
+    return res.json({
+      success: true,
+      message: reopen
+        ? 'Case has been reopened for supervisory field re-inspection.'
+        : 'Citizen rating and feedback recorded. Thank you for holding municipal services accountable!',
+      complaint: comp,
+    });
+  } catch (err: any) {
+    console.error('Feedback error:', err);
+    res.status(500).json({ error: 'Failed to submit feedback' });
+  }
 });
 
 // Real public statistics
@@ -1995,6 +2063,93 @@ app.get('/api/crews/leaderboard', async (_req: Request, res: Response) => {
     res.json(crewStats);
   } catch (err: any) {
     res.status(500).json({ error: 'Failed to load crew credits' });
+  }
+});
+
+// AI Before & After Resolution Audit (Field Worker / Supervisor)
+app.post('/api/worker/tasks/:id/audit-resolution', requireAuth, requireWorkerOrAdmin, async (req: AuthRequest, res: Response) => {
+  try {
+    const rawId = req.params.id;
+    const { beforeImageBase64, afterImageBase64, category = 'Civic Infrastructure' } = req.body;
+
+    if (!afterImageBase64) {
+      return res.status(400).json({ error: 'Post-repair photo evidence is required for AI visual audit.' });
+    }
+
+    const auditResult = await auditResolutionImages(beforeImageBase64, afterImageBase64, category);
+
+    // Update demo store with AI audit result
+    updateDemoResolutionAi(isNaN(Number(rawId)) ? rawId : Number(rawId), {
+      confidence: auditResult.confidence,
+      analysis: auditResult.analysis,
+      verified: auditResult.verified,
+      recommendation: auditResult.recommendation,
+    });
+
+    return res.json({
+      success: true,
+      audit: auditResult,
+    });
+  } catch (err: any) {
+    console.error('AI resolution audit error:', err);
+    res.status(500).json({ error: 'Failed to complete AI resolution audit' });
+  }
+});
+
+// Municipal Operations & Transparency CSV Export
+app.get(['/api/admin/export-csv', '/api/public/export-csv'], async (_req: Request, res: Response) => {
+  try {
+    const list = getDemoComplaints({ limit: 500 });
+
+    const escapeCsv = (str: any) => {
+      if (str === null || str === undefined) return '""';
+      const s = String(str).replace(/"/g, '""');
+      return `"${s}"`;
+    };
+
+    const headers = [
+      'Complaint ID',
+      'Tracking Number',
+      'Category',
+      'Title',
+      'Status',
+      'Priority',
+      'Severity',
+      'Upvotes',
+      'Citizen Rating',
+      'Address',
+      'Verification Status',
+      'Created Date',
+      'Resolved Date',
+      'AI Resolution Confidence',
+    ];
+
+    const rows = list.map((c) => [
+      escapeCsv(c.id),
+      escapeCsv(c.complaintNumber),
+      escapeCsv(c.category),
+      escapeCsv(c.title),
+      escapeCsv(c.status),
+      escapeCsv(c.priority),
+      escapeCsv(c.severity),
+      escapeCsv(c.upvotes || 0),
+      escapeCsv(c.citizenRating || 'N/A'),
+      escapeCsv(c.address),
+      escapeCsv(c.verificationStatus),
+      escapeCsv(c.createdAt),
+      escapeCsv(c.resolvedAt || 'Pending'),
+      escapeCsv(c.resolutionConfidence ? `${Math.round(c.resolutionConfidence * 100)}%` : 'N/A'),
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\r\n');
+
+    const filename = `civicfix_municipal_export_${new Date().toISOString().split('T')[0]}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.status(200).send(csvContent);
+  } catch (err: any) {
+    console.error('CSV export failed:', err);
+    res.status(500).json({ error: 'Failed to export CSV report' });
   }
 });
 

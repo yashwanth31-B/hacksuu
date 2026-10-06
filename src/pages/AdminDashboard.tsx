@@ -9,6 +9,7 @@ import {
   Trash2,
   Lock,
   AlertTriangle,
+  Download,
 } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -269,9 +270,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
             </h1>
           </div>
 
-          <div className="flex items-center gap-2 text-xs text-[#5C6E6A]">
-            <Shield className="w-4 h-4 text-[#1B3E36]" />
-            <span>Authenticated Administrator: <strong className="text-[#1A2825]">{user?.email}</strong></span>
+          <div className="flex flex-wrap items-center gap-3">
+            <a
+              href={getApiUrl('/api/admin/export-csv')}
+              download="civicfix_municipal_export.csv"
+              className="px-3.5 py-2 rounded-xl bg-[#FFFFFF] hover:bg-[#FAF9F5] border border-[#D4CEBF] text-[#1B3E36] text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all cursor-pointer shadow-xs"
+            >
+              <Download className="w-4 h-4 text-[#E5A952]" />
+              <span>Export CSV Audit</span>
+            </a>
+
+            <div className="flex items-center gap-2 text-xs text-[#5C6E6A]">
+              <Shield className="w-4 h-4 text-[#1B3E36]" />
+              <span>Authenticated Administrator: <strong className="text-[#1A2825]">{user?.email}</strong></span>
+            </div>
           </div>
         </div>
 
