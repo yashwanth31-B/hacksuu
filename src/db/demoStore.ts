@@ -24,6 +24,7 @@ export interface DemoComplaint {
   duplicateGroupId?: string | null;
   createdAt: string;
   updatedAt: string;
+  resolvedAt?: string | null;
   media?: any[];
   history?: any[];
   upvotes?: number;
@@ -664,4 +665,145 @@ export const updateDemoUser = (uid: string, updates: Partial<DemoUser>) => {
   Object.assign(user, updates, { updatedAt: new Date().toISOString() });
   return user;
 };
+
+export const getDemoComplaintById = (idOrNumber: number | string) => {
+  if (typeof idOrNumber === 'number') {
+    return demoStore.find(c => c.id === idOrNumber) || null;
+  }
+  const clean = String(idOrNumber).trim().toUpperCase();
+  return demoStore.find(c => c.complaintNumber.toUpperCase() === clean || String(c.id) === clean) || null;
+};
+
+export const updateDemoComplaint = (
+  idOrNumber: number | string,
+  updates: Partial<DemoComplaint>,
+  historyEntry?: {
+    previousStatus?: string | null;
+    newStatus?: string;
+    changedBy?: string;
+    reason?: string;
+  },
+  mediaEntry?: {
+    fileUrl: string;
+    fileType?: string;
+    uploadedBy?: string;
+    stage?: string;
+  }
+) => {
+  const comp = getDemoComplaintById(idOrNumber);
+  if (!comp) return null;
+
+  const prevStatus = comp.status;
+  Object.assign(comp, updates, { updatedAt: new Date().toISOString() });
+
+  if (mediaEntry) {
+    if (!comp.media) comp.media = [];
+    comp.media.push({
+      id: comp.media.length + 1,
+      complaintId: comp.id,
+      fileUrl: mediaEntry.fileUrl,
+      fileType: mediaEntry.fileType || 'image/jpeg',
+      uploadedBy: mediaEntry.uploadedBy || 'Field Worker',
+      stage: mediaEntry.stage || 'COMPLETION',
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  if (historyEntry) {
+    if (!comp.history) comp.history = [];
+    comp.history.push({
+      id: comp.history.length + 1,
+      complaintId: comp.id,
+      previousStatus: historyEntry.previousStatus !== undefined ? historyEntry.previousStatus : prevStatus,
+      newStatus: historyEntry.newStatus || comp.status,
+      changedBy: historyEntry.changedBy || 'Field Crew',
+      reason: historyEntry.reason || `Status updated to ${comp.status}`,
+      createdAt: new Date().toISOString(),
+    });
+  }
+
+  return comp;
+};
+
+export interface DemoCrew {
+  id: number;
+  municipalityId: number;
+  departmentId: number;
+  crewName: string;
+  supervisorId?: number | null;
+  active: boolean;
+  points: number;
+  completedJobs: number;
+  rating: string;
+}
+
+export const demoCrews: DemoCrew[] = [
+  {
+    id: 1,
+    municipalityId: 1,
+    departmentId: 1,
+    crewName: 'Kukatpally Rapid Drainage Taskforce',
+    supervisorId: 2,
+    active: true,
+    points: 380,
+    completedJobs: 14,
+    rating: '4.8',
+  },
+  {
+    id: 2,
+    municipalityId: 1,
+    departmentId: 3,
+    crewName: 'KPHB Road Patching Unit-A',
+    supervisorId: 2,
+    active: true,
+    points: 295,
+    completedJobs: 9,
+    rating: '4.6',
+  },
+  {
+    id: 3,
+    municipalityId: 1,
+    departmentId: 2,
+    crewName: 'North Zone Sanitation Blitz Squad',
+    supervisorId: 2,
+    active: true,
+    points: 210,
+    completedJobs: 7,
+    rating: '4.4',
+  },
+  {
+    id: 4,
+    municipalityId: 1,
+    departmentId: 4,
+    crewName: 'West Corridor Electrical Line Crew',
+    supervisorId: 2,
+    active: true,
+    points: 340,
+    completedJobs: 11,
+    rating: '4.7',
+  },
+];
+
+export const getDemoCrews = (departmentId?: number | null) => {
+  if (departmentId) {
+    return demoCrews.filter(c => c.active && c.departmentId === departmentId);
+  }
+  return demoCrews.filter(c => c.active);
+};
+
+export const addDemoCrewCredit = (crewId: number, points: number, isVerifiedCompletion: boolean = false) => {
+  const crew = demoCrews.find(c => c.id === crewId);
+  if (crew) {
+    crew.points = (crew.points || 0) + points;
+    if (isVerifiedCompletion) {
+      crew.completedJobs = (crew.completedJobs || 0) + 1;
+    }
+    crew.rating = Math.min(5, Math.max(3.8, 4.0 + (crew.points / 500) * 0.9)).toFixed(1);
+  }
+};
+
+export const getDemoCrewLeaderboard = () => {
+  return [...demoCrews].sort((a, b) => b.points - a.points);
+};
+
 

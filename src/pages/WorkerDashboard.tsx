@@ -33,6 +33,8 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
   const [completionNotes, setCompletionNotes] = useState('');
   const [completionPhoto, setCompletionPhoto] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [auditingAi, setAuditingAi] = useState(false);
+  const [aiAuditResult, setAiAuditResult] = useState<any | null>(null);
 
   const fetchTasks = async () => {
     try {
@@ -45,8 +47,13 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
       if (res.ok) {
         const data = await res.json();
         setTasks(data);
-        if (data.length > 0 && !activeTask) {
-          setActiveTask(data[0]);
+        if (data.length > 0) {
+          if (!activeTask) {
+            setActiveTask(data[0]);
+          } else {
+            const current = data.find((t: any) => t.id === activeTask.id);
+            if (current) setActiveTask(current);
+          }
         }
       }
     } catch (err) {
@@ -71,13 +78,35 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
       });
       if (res.ok) {
         const updated = await res.json();
+        const actionLabels: Record<string, string> = {
+          accept: 'Assignment Accepted (+5 Credits)',
+          arrived: 'On-Site Arrival Marked (+10 Credits)',
+          start: 'Work In Progress (+5 Credits)',
+        };
+        showToast({
+          title: 'Status Updated',
+          message: actionLabels[action] || `Task updated to ${updated.status}`,
+          type: 'success',
+        });
         setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: updated.status } : t)));
         if (activeTask?.id === taskId) {
           setActiveTask((prev: any) => ({ ...prev, status: updated.status }));
         }
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast({
+          title: 'Action Failed',
+          message: errData.error || `Failed to perform ${action}`,
+          type: 'error',
+        });
       }
     } catch (err) {
       console.error(`Action ${action} failed:`, err);
+      showToast({
+        title: 'Error',
+        message: `Action ${action} failed due to network error.`,
+        type: 'error',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -85,7 +114,16 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
 
   // Submit completion evidence
   const handleCompleteTask = async () => {
-    if (!activeTask || !completionNotes.trim()) return;
+    if (!activeTask) return;
+    const finalNotes = completionNotes.trim() || (completionPhoto ? 'Remediation completed by field response crew with photo evidence.' : '');
+    if (!finalNotes) {
+      showToast({
+        title: 'Notes Required',
+        message: 'Please provide completion notes describing the repair work.',
+        type: 'error',
+      });
+      return;
+    }
     setActionLoading(true);
     try {
       const token = await getAuthToken();
@@ -96,18 +134,45 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          completionNotes,
+          completionNotes: finalNotes,
           completionMediaUrl: completionPhoto,
         }),
       });
       if (res.ok) {
+        const updated = await res.json().catch(() => null);
         setShowCompletionModal(false);
         setCompletionNotes('');
         setCompletionPhoto(null);
+        setAiAuditResult(null);
+        showToast({
+          title: 'Work Completed',
+          message: 'Resolution proof submitted successfully (+25 Credits). Awaiting supervisor verification.',
+          type: 'success',
+        });
+        setTasks((prev) =>
+          prev.map((t) => (t.id === activeTask.id ? { ...t, status: 'COMPLETED', ...(updated || {}) } : t))
+        );
+        setActiveTask((prev: any) => ({
+          ...prev,
+          status: 'COMPLETED',
+          ...(updated || {}),
+        }));
         await fetchTasks();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast({
+          title: 'Submission Failed',
+          message: errData.error || 'Failed to submit completion proof.',
+          type: 'error',
+        });
       }
     } catch (err) {
       console.error('Completion submission failed:', err);
+      showToast({
+        title: 'Network Error',
+        message: 'Could not connect to the server to submit completion.',
+        type: 'error',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -130,10 +195,32 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
         }),
       });
       if (res.ok) {
+        const updated = await res.json().catch(() => null);
+        showToast({
+          title: approved ? 'Resolution Approved' : 'Task Reopened',
+          message: approved ? 'Issue closed and resolution verified (+50 Credits awarded).' : 'Task reopened for rectification.',
+          type: approved ? 'success' : 'info',
+        });
+        setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: approved ? 'RESOLVED' : 'REOPENED', ...(updated || {}) } : t)));
+        if (activeTask?.id === taskId) {
+          setActiveTask((prev: any) => ({ ...prev, status: approved ? 'RESOLVED' : 'REOPENED', ...(updated || {}) }));
+        }
         await fetchTasks();
+      } else {
+        const errData = await res.json().catch(() => ({}));
+        showToast({
+          title: 'Verification Failed',
+          message: errData.error || 'Failed to verify resolution.',
+          type: 'error',
+        });
       }
     } catch (err) {
       console.error('Resolution verification failed:', err);
+      showToast({
+        title: 'Network Error',
+        message: 'Could not connect to verify resolution.',
+        type: 'error',
+      });
     } finally {
       setActionLoading(false);
     }
@@ -406,6 +493,17 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                   </h3>
 
                   <div className="flex flex-wrap gap-3">
+                    {(activeTask.status === 'REPORTED' || activeTask.status === 'VERIFIED') && (
+                      <button
+                        onClick={() => handleTaskAction(activeTask.id, 'accept')}
+                        disabled={actionLoading}
+                        className="px-6 py-3 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-[#E5A952]" />
+                        <span>Claim & Accept Dispatch (+5 Credits)</span>
+                      </button>
+                    )}
+
                     {activeTask.status === 'ASSIGNED' && (
                       <button
                         onClick={() => handleTaskAction(activeTask.id, 'accept')}
@@ -439,10 +537,26 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                       </button>
                     )}
 
-                    {activeTask.status === 'IN_PROGRESS' && (
+                    {activeTask.status === 'REOPENED' && (
+                      <button
+                        onClick={() => handleTaskAction(activeTask.id, 'start')}
+                        disabled={actionLoading}
+                        className="px-6 py-3 bg-[#B06D44] hover:bg-[#975833] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
+                      >
+                        <Wrench className="w-4 h-4" />
+                        <span>Resume Remediation Work (+5 Credits)</span>
+                      </button>
+                    )}
+
+                    {/* Submit Completion Proof available whenever task is not yet completed or resolved */}
+                    {activeTask.status !== 'COMPLETED' && activeTask.status !== 'RESOLVED' && (
                       <button
                         onClick={() => setShowCompletionModal(true)}
-                        className="px-6 py-3 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer"
+                        className={`px-6 py-3 text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl flex items-center gap-2 shadow-xs cursor-pointer ${
+                          activeTask.status === 'IN_PROGRESS'
+                            ? 'bg-[#2E6F5E] hover:bg-[#25584b]'
+                            : 'bg-[#234B41] hover:bg-[#1B3E36]'
+                        }`}
                       >
                         <Camera className="w-4 h-4 text-[#E5A952]" />
                         <span>Submit Completion Proof (+25 Credits)</span>
@@ -501,16 +615,38 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
 
               <div className="space-y-4 mb-6">
                 <div>
-                  <label className="block text-xs font-bold text-[#1A2825] uppercase tracking-wider mb-2 font-mono">
-                    Completion Notes *
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-[#1A2825] uppercase tracking-wider font-mono">
+                      Completion Notes *
+                    </label>
+                    <span className="text-[10px] text-[#5C6E6A]">Quick-select or type custom notes:</span>
+                  </div>
                   <textarea
                     rows={3}
                     placeholder="e.g. Filled pothole with cold asphalt mix, compacted surface, cleared road debris..."
                     value={completionNotes}
                     onChange={(e) => setCompletionNotes(e.target.value)}
-                    className="w-full bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] rounded-xl p-3 text-sm text-[#1A2825] placeholder-[#8A9894] outline-none resize-none"
+                    className="w-full bg-[#FFFFFF] border border-[#D4CEBF] focus:border-[#1B3E36] rounded-xl p-3 text-sm text-[#1A2825] placeholder-[#8A9894] outline-none resize-none mb-2"
                   />
+                  {/* Quick-fill preset chips */}
+                  <div className="flex flex-wrap gap-1.5">
+                    {[
+                      'Road patched with cold asphalt mix and roller compacted',
+                      'Stormwater drain desilted and debris choke removed',
+                      'Public garbage backlog cleared, bin sanitized',
+                      'Streetlight repaired, fixture and wiring operational',
+                      'Water pipeline leak sealed and pressure tested',
+                    ].map((preset, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => setCompletionNotes(preset)}
+                        className="text-[10px] px-2.5 py-1 rounded-lg bg-[#E6F2ED] hover:bg-[#d0e7dc] text-[#1B4D3E] border border-[#A8CEBE] font-medium transition-colors cursor-pointer"
+                      >
+                        + {preset.slice(0, 32)}...
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
@@ -589,14 +725,14 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
                 <button
                   type="button"
                   onClick={() => setShowCompletionModal(false)}
-                  className="px-4 py-2 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider"
+                  className="px-4 py-2 text-[#5C6E6A] hover:text-[#1A2825] text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={handleCompleteTask}
-                  disabled={actionLoading || !completionNotes.trim()}
+                  disabled={actionLoading || (!completionNotes.trim() && !completionPhoto)}
                   className="px-6 py-2.5 bg-[#2E6F5E] hover:bg-[#25584b] text-[#FAF9F5] font-bold text-xs uppercase tracking-wider rounded-xl disabled:opacity-50 cursor-pointer shadow-xs"
                 >
                   {actionLoading ? 'Submitting...' : 'Submit Resolution Proof'}
