@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
           <span className="flex items-center gap-1.5">
             <span
               className={`w-2 h-2 rounded-full ${
-                gpsStatus === 'ready' || isTracking
+                gpsStatus === 'active' || isTracking
                   ? 'bg-emerald-400 animate-pulse'
                   : 'bg-[#E5A952]'
               }`}

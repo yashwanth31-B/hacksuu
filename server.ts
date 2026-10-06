@@ -795,38 +795,70 @@ app.post('/api/complaints', optionalAuth, async (req: AuthRequest, res: Response
     const publicLng = Number((lng + lngJitter).toFixed(6));
 
     // Department auto-routing based on category
-    let matchedDeptId = 5; // Public Infrastructure default
+    let matchedDeptId: number | null = null;
     const catLower = category.toLowerCase();
+    let deptKeyword = 'infrastructure';
     if (catLower.includes('pothole') || catLower.includes('road') || catLower.includes('footpath')) {
-      matchedDeptId = 1; // Roads & Highways
+      deptKeyword = 'road';
     } else if (catLower.includes('garbage') || catLower.includes('dumping') || catLower.includes('waste')) {
-      matchedDeptId = 2; // Sanitation & Waste Management
+      deptKeyword = 'sanitation';
     } else if (catLower.includes('streetlight') || catLower.includes('electrical') || catLower.includes('light')) {
-      matchedDeptId = 3; // Electrical & Lighting
-    } else if (catLower.includes('drainage') || catLower.includes('water') || catLower.includes('pipe') || catLower.includes('flood')) {
-      matchedDeptId = 4; // Water Supply & Drainage
+      deptKeyword = 'light';
+    } else if (catLower.includes('drainage') || catLower.includes('flood')) {
+      deptKeyword = 'drain';
+    } else if (catLower.includes('water') || catLower.includes('pipe') || catLower.includes('sewer')) {
+      deptKeyword = 'water';
     }
 
-    // Municipality and Ward determination for Indian urban regions
-    let municipalityId = 1; // Default: Municipal Corporation of Delhi (MCD / NDMC)
-    let wardId = 1;
-    
-    // Auto-route based on coordinates: Visakhapatnam, Hyderabad, Bengaluru, Mumbai, or Delhi NCR
+    try {
+      const allDepts = await db.select({ id: departments.id, name: departments.name }).from(departments).limit(10);
+      if (allDepts.length > 0) {
+        const found = allDepts.find((d) => d.name.toLowerCase().includes(deptKeyword));
+        matchedDeptId = found ? found.id : allDepts[0].id;
+      }
+    } catch {
+      // Fallback if table cannot be read
+      matchedDeptId = 1;
+    }
+
+    // Municipality and Ward determination based on coordinates
+    let targetCity = 'hyderabad';
     if (lat >= 17.5 && lat <= 18.0 && lng >= 83.0 && lng <= 83.6) {
-      municipalityId = 2; // GVMC Visakhapatnam
-      wardId = 3;
-    } else if (lat >= 17.1 && lat <= 17.6 && lng >= 78.1 && lng <= 78.7) {
-      municipalityId = 3; // GHMC Hyderabad
-      wardId = 4;
+      targetCity = 'visakhapatnam';
     } else if (lat >= 12.7 && lat <= 13.3 && lng >= 77.3 && lng <= 77.9) {
-      municipalityId = 4; // BBMP Bengaluru
-      wardId = 5;
-    } else if (lat >= 18.7 && lat <= 19.4 && lng >= 72.6 && lng <= 73.2) {
-      municipalityId = 5; // BMC Mumbai
+      targetCity = 'bengaluru';
+    } else if (lat >= 17.1 && lat <= 17.6 && lng >= 78.1 && lng <= 78.7) {
+      targetCity = 'hyderabad';
+    }
+
+    let municipalityId: number | null = null;
+    let wardId: number | null = null;
+    try {
+      const allMuns = await db.select({ id: municipalities.id, name: municipalities.name }).from(municipalities).limit(10);
+      if (allMuns.length > 0) {
+        const foundMun = allMuns.find((m) => m.name.toLowerCase().includes(targetCity)) || allMuns[0];
+        municipalityId = foundMun.id;
+
+        const munWards = await db
+          .select({ id: wards.id })
+          .from(wards)
+          .where(eq(wards.municipalityId, municipalityId))
+          .limit(1);
+        if (munWards.length > 0) {
+          wardId = munWards[0].id;
+        }
+      }
+    } catch {
+      // Fallback
+      municipalityId = 1;
       wardId = 1;
-    } else {
-      municipalityId = 1; // MCD / NDMC Delhi NCR
-      wardId = 1;
+    }
+
+    // Guard: Ensure database configuration is loaded
+    if (!process.env.DATABASE_URL && !process.env.SQL_PASSWORD) {
+      return res.status(503).json({
+        error: 'DATABASE_URL is not being loaded. Please ensure C:\\Users\\yashwanthteja\\Desktop\\integration\\.env exists and contains DATABASE_URL.'
+      });
     }
 
     // Insert complaint
@@ -949,8 +981,9 @@ app.post('/api/complaints', optionalAuth, async (req: AuthRequest, res: Response
       createdAt: comp.createdAt,
     });
   } catch (err: any) {
-    console.error('Complaint submission error:', err);
-    res.status(500).json({ error: err.message || 'Failed to submit complaint.' });
+    const errorDetail = err.cause?.detail || err.cause?.message || err.message || 'Failed to submit complaint.';
+    console.error('Complaint submission error:', errorDetail, err);
+    res.status(500).json({ error: errorDetail });
   }
 });
 
