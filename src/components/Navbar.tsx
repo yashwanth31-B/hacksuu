@@ -62,7 +62,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
 
   const civicLinks = [
     { label: 'Resident Desk', path: '/report', icon: FileText, badge: 'New Case' },
-    { label: 'Civic Overview', path: '/', icon: Home },
+    { label: 'Civic Overview', path: user ? '/' : '/home', icon: Home },
     { label: 'Incident Map', path: '/map', icon: MapPin },
     { label: 'Track Open Case', path: '/track', icon: Search },
     { label: 'City Transparency', path: '/transparency', icon: BarChart3 },
@@ -201,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
         )}
 
         {/* User Notifications button if logged in */}
-        {user && (
+        {user ? (
           <div>
             <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-[#7E9690]">
               DISPATCH NOTICES
@@ -229,6 +229,38 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 </span>
               )}
             </button>
+          </div>
+        ) : (
+          <div>
+            <div className="px-3 mb-2 text-[10px] font-bold uppercase tracking-widest text-[#7E9690]">
+              RESIDENT ACCESS
+            </div>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={() => handleNav('/login')}
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                  currentPath === '/login'
+                    ? 'bg-[#E5A952] text-[#102621] font-semibold shadow-sm'
+                    : 'text-[#E5E1D5] hover:bg-[#274E45] hover:text-[#FFFFFF]'
+                }`}
+              >
+                <LogIn className={`w-4 h-4 ${currentPath === '/login' ? 'text-[#102621]' : 'text-[#A0B4AF]'}`} />
+                <span>Sign In</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNav('/signup')}
+                className={`w-full flex items-center gap-2.5 px-3.5 py-2 rounded-lg text-xs font-medium transition-all ${
+                  currentPath === '/signup' || currentPath === '/register'
+                    ? 'bg-[#E5A952] text-[#102621] font-semibold shadow-sm'
+                    : 'text-[#E5E1D5] hover:bg-[#274E45] hover:text-[#FFFFFF]'
+                }`}
+              >
+                <User className={`w-4 h-4 ${currentPath === '/signup' || currentPath === '/register' ? 'text-[#102621]' : 'text-[#A0B4AF]'}`} />
+                <span>Create Citizen ID</span>
+              </button>
+            </div>
           </div>
         )}
       </div>
@@ -291,13 +323,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
                 </button>
               </div>
             ) : (
-              <button
-                type="button"
-                onClick={() => openAuthModal('personas')}
-                className="px-2.5 py-1 rounded-lg bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F3BA6A] transition-colors shadow-sm cursor-pointer"
-              >
-                Sign In
-              </button>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => handleNav('/login')}
+                  className="px-2.5 py-1 rounded-lg bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F3BA6A] transition-colors shadow-sm cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleNav('/signup')}
+                  className="px-2 py-1 rounded-lg bg-[#274E45] text-[#FAF9F5] text-[10px] font-bold uppercase tracking-wider hover:bg-[#326156] transition-colors cursor-pointer"
+                >
+                  Register
+                </button>
+              </div>
             )}
           </div>
         </div>
@@ -332,13 +373,22 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
               <User className="w-4 h-4" />
             </button>
           ) : (
-            <button
-              type="button"
-              onClick={() => openAuthModal('personas')}
-              className="px-2.5 py-1 rounded bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase shadow-sm cursor-pointer"
-            >
-              Sign In
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => handleNav('/login')}
+                className="px-2.5 py-1 rounded bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase shadow-sm cursor-pointer"
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => handleNav('/signup')}
+                className="px-2 py-1 rounded bg-[#274E45] text-[#FAF9F5] text-[10px] font-bold uppercase cursor-pointer"
+              >
+                Register
+              </button>
+            </div>
           )}
 
           <button

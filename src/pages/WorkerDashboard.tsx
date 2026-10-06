@@ -175,7 +175,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
 
             <button
               type="button"
-              onClick={() => openAuthModal('signin')}
+              onClick={() => navigate('/login')}
               className="w-full py-2.5 rounded-xl border border-[#D5D1C5] bg-white hover:bg-slate-50 text-xs font-bold text-[#1A2825] uppercase tracking-wider transition-colors cursor-pointer"
             >
               Sign In with Credentials

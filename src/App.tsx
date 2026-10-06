@@ -12,10 +12,12 @@ import { TransparencyDashboard } from './pages/TransparencyDashboard.tsx';
 import { AdminDashboard } from './pages/AdminDashboard.tsx';
 import { WorkerDashboard } from './pages/WorkerDashboard.tsx';
 import { CitizenProfile } from './pages/CitizenProfile.tsx';
+import { LoginPage } from './pages/LoginPage.tsx';
+import { SignupPage } from './pages/SignupPage.tsx';
 import { Loader2 } from 'lucide-react';
 
 function AppContent() {
-  const { setupStatus, checkingSetup } = useAuth();
+  const { user, setupStatus, checkingSetup } = useAuth();
   const [currentPath, setCurrentPath] = useState(window.location.pathname || '/');
 
   // Handle browser back/forward
@@ -60,7 +62,10 @@ function AppContent() {
       <AuthModal />
 
       <main className="flex-1 min-w-0 bg-[#F9F6EE] text-[#1A2825] min-h-screen">
-        {currentPath === '/' && <Home navigate={navigate} />}
+        {currentPath === '/' && (
+          user ? <Home navigate={navigate} /> : <LoginPage navigate={navigate} />
+        )}
+        {currentPath === '/home' && <Home navigate={navigate} />}
         {currentPath === '/report' && <ReportIssue navigate={navigate} />}
         {currentPath === '/map' && <PublicMap navigate={navigate} />}
         {(currentPath === '/track' || currentPath.startsWith('/complaint/')) && (
@@ -70,6 +75,8 @@ function AppContent() {
         {currentPath === '/admin' && <AdminDashboard navigate={navigate} />}
         {currentPath === '/worker' && <WorkerDashboard navigate={navigate} />}
         {currentPath === '/profile' && <CitizenProfile navigate={navigate} />}
+        {currentPath === '/login' && <LoginPage navigate={navigate} />}
+        {(currentPath === '/signup' || currentPath === '/register') && <SignupPage navigate={navigate} />}
       </main>
     </div>
   );
