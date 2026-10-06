@@ -422,3 +422,105 @@ export const getDemoStats = () => {
     slaComplianceRate: 94.2,
   };
 };
+
+export interface DemoUser {
+  id: number;
+  uid: string;
+  email: string;
+  name: string;
+  displayName: string;
+  role: 'admin' | 'worker' | 'supervisor' | 'citizen';
+  anonymousPublicId: string;
+  phone?: string | null;
+  municipalityId?: number | null;
+  password?: string;
+  passwordHash?: string;
+  isAdmin: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const demoUsers: DemoUser[] = [
+  {
+    id: 1,
+    uid: 'admin_ghmc_001',
+    email: 'admin@ghmc.gov.in',
+    name: 'Municipal Operations Director',
+    displayName: 'Dir. K. Ramanathan (GHMC Ops)',
+    role: 'admin',
+    anonymousPublicId: 'Admin #GHMC-DIR',
+    phone: '+91 40 2322 5555',
+    municipalityId: 1,
+    password: 'admin123',
+    isAdmin: true,
+    createdAt: daysAgo(30),
+    updatedAt: daysAgo(1),
+  },
+  {
+    id: 2,
+    uid: 'worker_ghmc_042',
+    email: 'rajesh.kumar@ghmc.gov.in',
+    name: 'Rajesh Kumar',
+    displayName: 'Rajesh Kumar (Crew #4 Lead)',
+    role: 'worker',
+    anonymousPublicId: 'Worker #CK-42',
+    phone: '+91 98480 12345',
+    municipalityId: 1,
+    password: 'worker123',
+    isAdmin: false,
+    createdAt: daysAgo(20),
+    updatedAt: daysAgo(2),
+  },
+  {
+    id: 3,
+    uid: 'citizen_hyd_108',
+    email: 'priya.sharma@gmail.com',
+    name: 'Priya Sharma',
+    displayName: 'Priya Sharma (Resident)',
+    role: 'citizen',
+    anonymousPublicId: 'Citizen #CF-8101',
+    phone: '+91 99887 76655',
+    municipalityId: 1,
+    password: 'citizen123',
+    isAdmin: false,
+    createdAt: daysAgo(10),
+    updatedAt: daysAgo(1),
+  },
+];
+
+export const getDemoUsers = () => [...demoUsers];
+
+export const findDemoUserByEmail = (email: string) => {
+  if (!email) return null;
+  const clean = email.trim().toLowerCase();
+  return demoUsers.find(u => u.email.toLowerCase() === clean) || null;
+};
+
+export const findDemoUserByUid = (uid: string) => {
+  if (!uid) return null;
+  return demoUsers.find(u => u.uid === uid) || null;
+};
+
+export const addDemoUser = (user: Omit<DemoUser, 'id' | 'createdAt' | 'updatedAt'>) => {
+  const existing = findDemoUserByEmail(user.email);
+  if (existing) return existing;
+
+  const id = demoUsers.length > 0 ? Math.max(...demoUsers.map(u => u.id)) + 1 : 1;
+  const nowIso = new Date().toISOString();
+  const newUser: DemoUser = {
+    ...user,
+    id,
+    createdAt: nowIso,
+    updatedAt: nowIso,
+  };
+  demoUsers.push(newUser);
+  return newUser;
+};
+
+export const updateDemoUser = (uid: string, updates: Partial<DemoUser>) => {
+  const user = findDemoUserByUid(uid);
+  if (!user) return null;
+  Object.assign(user, updates, { updatedAt: new Date().toISOString() });
+  return user;
+};
+

@@ -14,7 +14,7 @@ interface CitizenProfileProps {
 }
 
 export const CitizenProfile: React.FC<CitizenProfileProps> = ({ navigate }) => {
-  const { user, profile, logout, getAuthToken } = useAuth();
+  const { user, profile, logout, getAuthToken, openAuthModal, loginAsPersona } = useAuth();
   const [notificationsList, setNotificationsList] = useState<any[]>([]);
   const [loadingNotifs, setLoadingNotifs] = useState(true);
 
@@ -59,19 +59,45 @@ export const CitizenProfile: React.FC<CitizenProfileProps> = ({ navigate }) => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#F9F6EE] py-16 px-4 text-center">
-        <div className="max-w-md mx-auto bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-8 shadow-sm">
-          <User className="w-12 h-12 text-[#5C6E6A] mx-auto mb-4" />
-          <h2 className="text-xl font-serif font-bold text-[#1A2825] mb-2">Sign In Required</h2>
+      <div className="min-h-screen bg-[#F9F6EE] py-16 px-4 text-center flex items-center justify-center">
+        <div className="max-w-md w-full bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-8 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-900 flex items-center justify-center mx-auto mb-4">
+            <User className="w-7 h-7 text-emerald-800" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-mono">
+            RESIDENT PORTAL ACCESS
+          </span>
+          <h2 className="text-xl font-serif font-bold text-[#1A2825] mt-2 mb-2">Citizen Identity Required</h2>
           <p className="text-xs text-[#5C6E6A] mb-6">
-            Sign in with Google or resident credentials to view your complaint history and verified notifications.
+            Sign in with your Citizen credentials or Google account to view your filed complaints and municipal dispatch notices.
           </p>
-          <button
-            onClick={() => navigate('/')}
-            className="px-6 py-2.5 bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] rounded-xl text-xs font-bold uppercase tracking-wider cursor-pointer"
-          >
-            Return to Home
-          </button>
+
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={() => loginAsPersona('citizen')}
+              className="w-full py-2.5 rounded-xl bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <User className="w-4 h-4 text-[#E5A952]" />
+              <span>Authenticate as Citizen (1-Click)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuthModal('signin')}
+              className="w-full py-2.5 rounded-xl border border-[#D5D1C5] bg-white hover:bg-slate-50 text-xs font-bold text-[#1A2825] uppercase tracking-wider transition-colors cursor-pointer"
+            >
+              Sign In with Email / Password
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full text-xs text-[#5C6E6A] hover:text-[#1A2825] py-1 font-medium"
+            >
+              Return to Resident Desk
+            </button>
+          </div>
         </div>
       </div>
     );

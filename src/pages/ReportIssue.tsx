@@ -36,7 +36,7 @@ const CATEGORIES = [
 ];
 
 export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
-  const { getAuthToken } = useAuth();
+  const { user, profile, getAuthToken, openAuthModal } = useAuth();
 
   // Wizard Step (1 to 6)
   const [step, setStep] = useState(1);
@@ -897,9 +897,24 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
                 <span className="text-[#5C6E6A] uppercase font-mono">Evidence Attached:</span>
                 <span className="text-[#2E6F5E] font-bold">{mediaUrls.length} file(s)</span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-[#5C6E6A] uppercase font-mono">Citizen Privacy:</span>
-                <span className="text-[#1B3E36] font-bold">Anonymous Municipal ID</span>
+              <div className="flex justify-between items-center">
+                <span className="text-[#5C6E6A] uppercase font-mono">Reporting Citizen:</span>
+                {user ? (
+                  <span className="text-[#1B3E36] font-bold">
+                    {profile?.displayName || user.email} ({profile?.anonymousPublicId || 'Citizen ID'})
+                  </span>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <span className="text-[#5C6E6A] italic">Anonymous Whistleblower</span>
+                    <button
+                      type="button"
+                      onClick={() => openAuthModal('personas')}
+                      className="text-[10px] text-[#B06D44] underline font-bold"
+                    >
+                      Sign In
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 

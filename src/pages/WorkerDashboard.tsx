@@ -16,8 +16,8 @@ interface WorkerDashboardProps {
   navigate: (path: string) => void;
 }
 
-export const WorkerDashboard: React.FC<WorkerDashboardProps> = () => {
-  const { user, profile, getAuthToken } = useAuth();
+export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) => {
+  const { user, profile, getAuthToken, loginAsPersona, openAuthModal } = useAuth();
   const { location: gpsLocation, calculateDistance, formatDistance } = useGPS();
   const [tasks, setTasks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,6 +141,58 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = () => {
     reader.onload = () => setCompletionPhoto(reader.result as string);
     reader.readAsDataURL(file);
   };
+
+  const isAuthorizedWorker =
+    user &&
+    (profile?.role === 'worker' || profile?.role === 'supervisor' || profile?.role === 'admin');
+
+  if (!isAuthorizedWorker) {
+    return (
+      <div className="min-h-screen bg-[#F9F6EE] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-8 shadow-sm text-center">
+          <div className="w-14 h-14 rounded-2xl bg-blue-100 text-blue-900 flex items-center justify-center mx-auto mb-4">
+            <Wrench className="w-7 h-7 text-blue-800" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-blue-100 text-blue-900 font-mono">
+            CREW DISPATCH CLEARANCE REQUIRED
+          </span>
+          <h2 className="text-xl font-serif font-bold text-[#1A2825] mt-2 mb-2">
+            Field Response Operations
+          </h2>
+          <p className="text-xs text-[#5C6E6A] mb-6">
+            The Field Response Crew portal is restricted to municipal maintenance staff and contractors. Sign in with crew credentials or authenticate via the Field Crew Lead persona.
+          </p>
+
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={() => loginAsPersona('worker')}
+              className="w-full py-2.5 rounded-xl bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <Wrench className="w-4 h-4 text-[#E5A952]" />
+              <span>Authenticate as Field Crew Lead (1-Click)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuthModal('signin')}
+              className="w-full py-2.5 rounded-xl border border-[#D5D1C5] bg-white hover:bg-slate-50 text-xs font-bold text-[#1A2825] uppercase tracking-wider transition-colors cursor-pointer"
+            >
+              Sign In with Credentials
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full text-xs text-[#5C6E6A] hover:text-[#1A2825] py-1 font-medium"
+            >
+              Return to Resident Desk
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-8 px-4 sm:px-6 lg:px-8">

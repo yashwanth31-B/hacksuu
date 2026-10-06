@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext.tsx';
 import { GPSProvider } from './context/GPSContext.tsx';
 import { Navbar } from './components/Navbar.tsx';
+import { AuthModal } from './components/AuthModal.tsx';
 import { FirstTimeAdminSetup } from './components/FirstTimeAdminSetup.tsx';
 import { Home } from './pages/Home.tsx';
 import { ReportIssue } from './pages/ReportIssue.tsx';
@@ -56,6 +57,7 @@ function AppContent() {
   return (
     <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] flex flex-col md:flex-row font-sans selection:bg-[#E5A952]/30">
       <Navbar currentPath={currentPath} navigate={navigate} />
+      <AuthModal />
 
       <main className="flex-1 min-w-0 bg-[#F9F6EE] text-[#1A2825] min-h-screen">
         {currentPath === '/' && <Home navigate={navigate} />}

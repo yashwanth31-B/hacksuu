@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from 'express';
 import { adminAuth } from '../lib/firebase-admin.ts';
-import { DecodedIdToken } from 'firebase-admin/auth';
 import { getOrCreateProfile, isAuthorizedAdmin } from '../db/users.ts';
+import { verifyJwt } from '../lib/jwt.ts';
 
 export interface AuthRequest extends Request {
-  user?: DecodedIdToken;
+  user?: any;
   profile?: any;
 }
 
@@ -23,11 +23,29 @@ export const requireAuth = async (
     return res.status(401).json({ error: 'Invalid token format.' });
   }
 
+  // 1. Try verifying as CivicFix JWT token
+  const jwtPayload = verifyJwt(token);
+  if (jwtPayload) {
+    req.user = {
+      uid: jwtPayload.uid,
+      email: jwtPayload.email,
+      name: jwtPayload.name,
+      role: jwtPayload.role,
+    };
+    req.profile = await getOrCreateProfile(
+      jwtPayload.uid,
+      jwtPayload.email,
+      jwtPayload.name,
+      jwtPayload.role
+    );
+    return next();
+  }
+
+  // 2. Try verifying as Firebase ID token
   try {
     const decodedToken = await adminAuth.verifyIdToken(token);
     req.user = decodedToken;
 
-    // Attach profile and resolve server-side verified role
     const profile = await getOrCreateProfile(
       decodedToken.uid,
       decodedToken.email || '',
@@ -35,9 +53,9 @@ export const requireAuth = async (
     );
     req.profile = profile;
 
-    next();
+    return next();
   } catch (error) {
-    console.error('Error verifying Firebase ID token:', error);
+    // Both token verifications failed
     return res.status(401).json({ error: 'Session expired or invalid. Please sign in again.' });
   }
 };
@@ -51,6 +69,23 @@ export const optionalAuth = async (
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split('Bearer ')[1]?.trim();
     if (token) {
+      const jwtPayload = verifyJwt(token);
+      if (jwtPayload) {
+        req.user = {
+          uid: jwtPayload.uid,
+          email: jwtPayload.email,
+          name: jwtPayload.name,
+          role: jwtPayload.role,
+        };
+        req.profile = await getOrCreateProfile(
+          jwtPayload.uid,
+          jwtPayload.email,
+          jwtPayload.name,
+          jwtPayload.role
+        );
+        return next();
+      }
+
       try {
         const decodedToken = await adminAuth.verifyIdToken(token);
         req.user = decodedToken;

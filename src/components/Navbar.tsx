@@ -27,7 +27,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
-  const { user, profile, loginWithGoogle, logout, getAuthToken } = useAuth();
+  const { user, profile, openAuthModal, logout, getAuthToken } = useAuth();
   const { isTracking, toggleTracking, status: gpsStatus } = useGPS();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -248,28 +248,53 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
           {/* Resident Access Row */}
           <div className="pt-2 border-t border-[#274E45]/80 flex items-center justify-between">
             <div className="min-w-0 pr-2">
-              <div className="text-[10px] uppercase font-bold tracking-wider text-[#7E9690]">
-                Resident Access
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#7E9690]">
+                  {user ? 'Verified Access' : 'Resident Access'}
+                </span>
+                {profile?.role && (
+                  <span
+                    className={`text-[8px] font-bold uppercase tracking-wider px-1.5 py-0.2 rounded font-mono ${
+                      profile.role === 'admin'
+                        ? 'bg-amber-400/20 text-amber-300 border border-amber-400/30'
+                        : profile.role === 'worker'
+                        ? 'bg-blue-400/20 text-blue-300 border border-blue-400/30'
+                        : 'bg-emerald-400/20 text-emerald-300 border border-emerald-400/30'
+                    }`}
+                  >
+                    {profile.role === 'admin' ? 'ADMIN' : profile.role === 'worker' ? 'CREW' : 'RESIDENT'}
+                  </span>
+                )}
               </div>
               <div className="text-xs font-semibold text-[#FAF9F5] truncate">
-                {user ? profile?.anonymousPublicId || user.email : 'Guest Whistleblower'}
+                {user ? profile?.displayName || profile?.anonymousPublicId || user.email : 'Guest Whistleblower'}
               </div>
             </div>
 
             {user ? (
-              <button
-                type="button"
-                onClick={logout}
-                title="Log Out"
-                className="p-1.5 rounded-lg text-[#A0B4AF] hover:text-rose-300 hover:bg-[#274E45] transition-colors"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => openAuthModal('personas')}
+                  title="Switch Persona / Role"
+                  className="px-1.5 py-1 rounded bg-[#274E45] text-[#E5A952] text-[9px] font-bold uppercase tracking-wider hover:bg-[#326156] transition-colors"
+                >
+                  Switch
+                </button>
+                <button
+                  type="button"
+                  onClick={logout}
+                  title="Log Out"
+                  className="p-1.5 rounded-lg text-[#A0B4AF] hover:text-rose-300 hover:bg-[#274E45] transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
-                onClick={loginWithGoogle}
-                className="px-2.5 py-1 rounded-lg bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F3BA6A] transition-colors shadow-sm"
+                onClick={() => openAuthModal('personas')}
+                className="px-2.5 py-1 rounded-lg bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase tracking-wider hover:bg-[#F3BA6A] transition-colors shadow-sm cursor-pointer"
               >
                 Sign In
               </button>
@@ -309,8 +334,8 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
           ) : (
             <button
               type="button"
-              onClick={loginWithGoogle}
-              className="px-2.5 py-1 rounded bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase"
+              onClick={() => openAuthModal('personas')}
+              className="px-2.5 py-1 rounded bg-[#E5A952] text-[#102621] text-[10px] font-bold uppercase shadow-sm cursor-pointer"
             >
               Sign In
             </button>

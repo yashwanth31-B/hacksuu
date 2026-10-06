@@ -27,8 +27,8 @@ type AdminTab =
   | 'audit'
   | 'health';
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = () => {
-  const { user, getAuthToken } = useAuth();
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
+  const { user, profile, getAuthToken, loginAsPersona, openAuthModal } = useAuth();
   const [activeTab, setActiveTab] = useState<AdminTab>('overview');
 
   // Stats & Complaints
@@ -204,6 +204,54 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = () => {
     const matchesCategory = categoryFilter === 'ALL' || c.category === categoryFilter;
     return matchesSearch && matchesStatus && matchesCategory;
   });
+
+  if (!user || profile?.role !== 'admin') {
+    return (
+      <div className="min-h-screen bg-[#F9F6EE] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#FAF9F5] border border-[#E5E1D5] rounded-3xl p-8 shadow-sm text-center">
+          <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-900 flex items-center justify-center mx-auto mb-4">
+            <Shield className="w-7 h-7 text-amber-800" />
+          </div>
+          <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-mono">
+            COMMAND CLEARANCE REQUIRED
+          </span>
+          <h2 className="text-xl font-serif font-bold text-[#1A2825] mt-2 mb-2">
+            Municipal Command Portal
+          </h2>
+          <p className="text-xs text-[#5C6E6A] mb-6">
+            The Civic Operations Command Center is restricted to authorized municipal directors. Sign in with administrative credentials or authenticate via the verified Administrator persona.
+          </p>
+
+          <div className="space-y-2.5">
+            <button
+              type="button"
+              onClick={() => loginAsPersona('admin')}
+              className="w-full py-2.5 rounded-xl bg-[#1B3E36] hover:bg-[#274E45] text-[#FAF9F5] text-xs font-bold uppercase tracking-wider transition-colors flex items-center justify-center gap-2 cursor-pointer shadow-sm"
+            >
+              <Shield className="w-4 h-4 text-[#E5A952]" />
+              <span>Authenticate as Municipal Admin (1-Click)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => openAuthModal('signin')}
+              className="w-full py-2.5 rounded-xl border border-[#D5D1C5] bg-white hover:bg-slate-50 text-xs font-bold text-[#1A2825] uppercase tracking-wider transition-colors cursor-pointer"
+            >
+              Sign In with Credentials
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="w-full text-xs text-[#5C6E6A] hover:text-[#1A2825] py-1 font-medium"
+            >
+              Return to Resident Desk
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F9F6EE] text-[#1A2825] py-8 px-4 sm:px-6 lg:px-8">
