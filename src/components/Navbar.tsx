@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   AlertTriangle,
   MapPin,
@@ -35,7 +36,7 @@ export const Navbar: React.FC<NavbarProps> = ({ currentPath, navigate }) => {
       try {
         const token = await getAuthToken();
         if (!token) return;
-        const res = await fetch('/api/notifications', {
+        const res = await fetch(getApiUrl('/api/notifications'), {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {

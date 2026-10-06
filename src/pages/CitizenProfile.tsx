@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   Shield,
   User,
@@ -26,7 +27,7 @@ export const CitizenProfile: React.FC<CitizenProfileProps> = ({ navigate }) => {
       setLoadingNotifs(true);
       const token = await getAuthToken();
       if (!token) return;
-      const res = await fetch('/api/notifications', {
+      const res = await fetch(getApiUrl('/api/notifications'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -46,7 +47,7 @@ export const CitizenProfile: React.FC<CitizenProfileProps> = ({ navigate }) => {
   const markNotificationRead = async (id: number) => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/notifications/${id}/read`, {
+      const res = await fetch(getApiUrl(`/api/notifications/${id}/read`), {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` },
       });

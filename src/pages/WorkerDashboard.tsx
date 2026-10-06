@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   Wrench,
   CheckCircle2,
@@ -40,7 +41,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
       setLoading(true);
       const token = await getAuthToken();
       if (!token) return;
-      const res = await fetch('/api/worker/tasks', {
+      const res = await fetch(getApiUrl('/api/worker/tasks'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -66,7 +67,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
     setActionLoading(true);
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/worker/tasks/${taskId}/${action}`, {
+      const res = await fetch(getApiUrl(`/api/worker/tasks/${taskId}/${action}`), {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -90,7 +91,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
     setActionLoading(true);
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/worker/tasks/${activeTask.id}/complete`, {
+      const res = await fetch(getApiUrl(`/api/worker/tasks/${activeTask.id}/complete`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +120,7 @@ export const WorkerDashboard: React.FC<WorkerDashboardProps> = ({ navigate }) =>
     setActionLoading(true);
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/worker/tasks/${taskId}/verify-resolution`, {
+      const res = await fetch(getApiUrl(`/api/worker/tasks/${taskId}/verify-resolution`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

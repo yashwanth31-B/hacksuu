@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, onAuthStateChanged, signInWithPopup, signOut } from 'firebase/auth';
 import { auth, googleAuthProvider } from '../lib/firebase.ts';
+import { getApiUrl } from '../lib/api.ts';
 
 export interface UserProfile {
   id: number;
@@ -47,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const refreshSetupStatus = async () => {
     try {
       setCheckingSetup(true);
-      const res = await fetch('/api/system/setup-status');
+      const res = await fetch(getApiUrl('/api/system/setup-status'));
       if (res.ok) {
         const data = await res.json();
         setSetupStatus(data);
@@ -77,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(getApiUrl('/api/auth/me'), {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
@@ -127,7 +128,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const completeInitialSetup = async (emails: string[]) => {
     try {
-      const res = await fetch('/api/system/initial-admin-setup', {
+      const res = await fetch(getApiUrl('/api/system/initial-admin-setup'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emails }),

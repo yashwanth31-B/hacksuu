@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { CivicMap, MapComplaint } from '../components/CivicMap.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   Shield,
   Layers,
@@ -77,10 +78,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
 
       // Parallel fetch
       const [sRes, cRes, crRes, aRes] = await Promise.all([
-        fetch('/api/public/stats'),
-        fetch('/api/admin/complaints?limit=150', { headers }),
-        fetch('/api/crews'),
-        fetch('/api/admin/administrators', { headers }),
+        fetch(getApiUrl('/api/public/stats')),
+        fetch(getApiUrl('/api/admin/complaints?limit=150'), { headers }),
+        fetch(getApiUrl('/api/crews')),
+        fetch(getApiUrl('/api/admin/administrators'), { headers }),
       ]);
 
       if (sRes.ok) setStats(await sRes.json());
@@ -106,19 +107,19 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
       const headers = { Authorization: `Bearer ${token}` };
 
       if (activeTab === 'fraud') {
-        const res = await fetch('/api/admin/fraud', { headers });
+        const res = await fetch(getApiUrl('/api/admin/fraud'), { headers });
         if (res.ok) setFraudList(await res.json());
       } else if (activeTab === 'duplicates') {
-        const res = await fetch('/api/admin/duplicates', { headers });
+        const res = await fetch(getApiUrl('/api/admin/duplicates'), { headers });
         if (res.ok) setDuplicateList(await res.json());
       } else if (activeTab === 'administrators') {
-        const res = await fetch('/api/admin/administrators', { headers });
+        const res = await fetch(getApiUrl('/api/admin/administrators'), { headers });
         if (res.ok) setAdminsList(await res.json());
       } else if (activeTab === 'audit') {
-        const res = await fetch('/api/admin/audit-logs', { headers });
+        const res = await fetch(getApiUrl('/api/admin/audit-logs'), { headers });
         if (res.ok) setAuditLogsList(await res.json());
       } else if (activeTab === 'health') {
-        const res = await fetch('/api/admin/system-health', { headers });
+        const res = await fetch(getApiUrl('/api/admin/system-health'), { headers });
         if (res.ok) setHealthStatus(await res.json());
       }
     };
@@ -129,7 +130,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
   const handleVerifyComplaint = async (id: number, action: 'VERIFY' | 'REJECT') => {
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/admin/complaints/${id}/verify`, {
+      const res = await fetch(getApiUrl(`/api/admin/complaints/${id}/verify`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ action, reason: actionReason }),
@@ -149,7 +150,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     if (!assignCrewId) return;
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/admin/complaints/${id}/assign`, {
+      const res = await fetch(getApiUrl(`/api/admin/complaints/${id}/assign`), {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ crewId: Number(assignCrewId) }),
@@ -170,7 +171,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     if (!newAdminEmail.trim()) return;
     try {
       const token = await getAuthToken();
-      const res = await fetch('/api/admin/administrators', {
+      const res = await fetch(getApiUrl('/api/admin/administrators'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ email: newAdminEmail }),
@@ -192,7 +193,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ navigate }) => {
     setAdminOpError(null);
     try {
       const token = await getAuthToken();
-      const res = await fetch(`/api/admin/administrators/${encodeURIComponent(email)}`, {
+      const res = await fetch(getApiUrl(`/api/admin/administrators/${encodeURIComponent(email)}`), {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });

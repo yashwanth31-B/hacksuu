@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getApiUrl } from '../lib/api.ts';
 import {
   AlertTriangle,
   MapPin,
@@ -33,14 +34,14 @@ export const Home: React.FC<HomeProps> = ({ navigate }) => {
       try {
         setLoading(true);
         // Load real stats
-        const statsRes = await fetch('/api/public/stats');
+        const statsRes = await fetch(getApiUrl('/api/public/stats'));
         if (statsRes.ok) {
           const s = await statsRes.json();
           setStats(s);
         }
 
         // Load complaints for map preview
-        const mapRes = await fetch('/api/public/complaints?limit=30');
+        const mapRes = await fetch(getApiUrl('/api/public/complaints?limit=30'));
         if (mapRes.ok) {
           const comps = await mapRes.json();
           setMapComplaints(comps);

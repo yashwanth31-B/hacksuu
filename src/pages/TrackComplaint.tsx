@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   Search,
   CheckCircle2,
@@ -46,7 +47,7 @@ export const TrackComplaint: React.FC<TrackComplaintProps> = ({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/public/complaints/${encodeURIComponent(num.trim())}`);
+      const res = await fetch(getApiUrl(`/api/public/complaints/${encodeURIComponent(num.trim())}`));
       const data = await res.json();
       if (!res.ok) {
         throw new Error(data.error || 'Complaint not found');
@@ -74,7 +75,7 @@ export const TrackComplaint: React.FC<TrackComplaintProps> = ({
         try {
           const token = await getAuthToken();
           if (!token) return;
-          const res = await fetch('/api/my-complaints', {
+          const res = await fetch(getApiUrl('/api/my-complaints'), {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (res.ok) {

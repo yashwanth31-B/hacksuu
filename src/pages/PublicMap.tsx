@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { CivicMap, MapComplaint } from '../components/CivicMap.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   Filter,
   CheckCircle2,
@@ -182,7 +183,7 @@ export const PublicMap: React.FC<PublicMapProps> = ({ navigate }) => {
   const fetchComplaints = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/public/complaints?limit=300');
+      const res = await fetch(getApiUrl('/api/public/complaints?limit=300'));
       if (res.ok) {
         const data = await res.json();
         setAllComplaints(data);

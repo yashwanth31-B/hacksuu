@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../lib/api.ts';
 import {
   BarChart3,
   TrendingUp,
@@ -25,8 +26,8 @@ export const TransparencyDashboard: React.FC<TransparencyDashboardProps> = ({ na
       try {
         setLoading(true);
         const [statsRes, leadRes] = await Promise.all([
-          fetch('/api/public/stats'),
-          fetch('/api/crews/leaderboard'),
+          fetch(getApiUrl('/api/public/stats')),
+          fetch(getApiUrl('/api/crews/leaderboard')),
         ]);
 
         if (statsRes.ok) setStats(await statsRes.json());

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext.tsx';
 import { useGPS } from '../context/GPSContext.tsx';
 import { CivicMap } from '../components/CivicMap.tsx';
+import { getApiUrl } from '../lib/api.ts';
 import {
   AlertTriangle,
   Upload,
@@ -189,7 +190,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
       // Trigger AI Detection automatically
       setAnalyzingAI(true);
       try {
-        const res = await fetch('/api/complaints/ai-analyze', {
+        const res = await fetch(getApiUrl('/api/complaints/ai-analyze'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64: base64, mimeType: file.type }),
@@ -231,7 +232,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
       const runDupCheck = async () => {
         setCheckingDuplicates(true);
         try {
-          const res = await fetch('/api/complaints/check-duplicate', {
+          const res = await fetch(getApiUrl('/api/complaints/check-duplicate'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -266,7 +267,7 @@ export const ReportIssue: React.FC<ReportIssueProps> = ({ navigate }) => {
         headers['Authorization'] = `Bearer ${token}`;
       }
 
-      const res = await fetch('/api/complaints', {
+      const res = await fetch(getApiUrl('/api/complaints'), {
         method: 'POST',
         headers,
         body: JSON.stringify({
