@@ -11,13 +11,13 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: ALLOWED_ORIGINS
+        value: https://integration-ruby.vercel.app,http://localhost:5173,http://localhost:3000
+      - key: APP_URL
+        value: https://integration-ruby.vercel.app
       - key: DATABASE_URL
         sync: false
       - key: GEMINI_API_KEY
-        sync: false
-      - key: ALLOWED_ORIGINS
-        sync: false
-      - key: APP_URL
         sync: false
       - key: MAPTILER_API_KEY
         sync: false
